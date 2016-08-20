@@ -1,0 +1,23 @@
+﻿<Window x:Class="Launcher.LNewVer"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Обновление инструментария" Height="187" Width="413" ResizeMode="NoResize" Topmost="True" WindowStartupLocation="CenterScreen" WindowStyle="ToolWindow" Closing="Window_Closing">
+    <Grid>
+        <RichTextBox AcceptsReturn="False" IsReadOnly="True" Margin="10,35,10,51" BorderBrush="White">
+            <RichTextBox.Resources>
+                <Style TargetType="Hyperlink">
+                    <Setter Property="Cursor" Value="Hand" />
+                    <EventSetter Event="MouseLeftButtonDown" Handler="Hyperlink_MouseLeftButtonDown" />
+                </Style>
+            </RichTextBox.Resources>
+            <FlowDocument>
+                <Paragraph FontSize="20">
+                    Доступна новая версия лаунчера. Перейдите по
+                    <!--//TODO: SET STATIC LINK FOR AUTOUPDATE-->
+                    <Hyperlink NavigateUri="http://your-server.domain/launcher/Launcher.exe">ссылке</Hyperlink>
+                    для загрузки.
+                </Paragraph>
+            </FlowDocument>
+        </RichTextBox>
+    </Grid>
+</Window>

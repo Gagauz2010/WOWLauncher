@@ -1,0 +1,45 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="Launcher.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="PatchDownloadURL" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">https://dl.dropboxusercontent.com/u/50865248/work/launcher/patchlist.txt</Value>
+    </Setting>
+    <Setting Name="PatchToDelete" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">https://dl.dropboxusercontent.com/u/50865248/work/launcher/patchtodel.txt</Value>
+    </Setting>
+    <Setting Name="launcherVersionUrl" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">https://dl.dropboxusercontent.com/u/50865248/work/launcher/version.txt</Value>
+    </Setting>
+    <Setting Name="launcherNewsFileUrl" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">https://dl.dropboxusercontent.com/u/50865248/work/launcher/news.txt</Value>
+    </Setting>
+    <Setting Name="launcherUpdates" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">https://dl.dropboxusercontent.com/u/50865248/work/launcher/updates.txt</Value>
+    </Setting>
+    <Setting Name="realmlistURL" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">https://dl.dropboxusercontent.com/u/50865248/work/launcher/realmlist.txt</Value>
+    </Setting>
+    <Setting Name="username" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="password" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="autologin" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="gameFolder" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Не задано</Value>
+    </Setting>
+    <Setting Name="progressBarType" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="downloadSpeedLimit" Type="System.Int64" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="clientExe" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">Wow.exe</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
