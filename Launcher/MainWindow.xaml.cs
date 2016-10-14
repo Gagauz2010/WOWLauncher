@@ -21,6 +21,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
@@ -459,26 +460,30 @@ namespace Launcher
                     }
 
                     if (proceed)
-                    {
-                        string[] link = ex[0].Split(char.Parse("Ø"));
-                        long pingValue = long.MaxValue;
-                        string bestLink = string.Empty;
+					{
+						string[] link = ex[0].Split(char.Parse("Ø"));
+						long pingValue = long.MaxValue;
+						string bestLink = link[0];
 
-                        foreach (string curLink in link)
-                        {
-                            System.Net.NetworkInformation.Ping ping = new System.Net.NetworkInformation.Ping();
-                            System.Net.NetworkInformation.PingReply pingReply = ping.Send(curLink);
-                            if (pingReply.RoundtripTime < pingValue)
-                            {
-                                bestLink = curLink;
-                                pingValue = pingReply.RoundtripTime;
-                            }
-                        }
+						foreach (string curLink in link)
+						{
+							try {
+								Ping ping = new Ping();
+								PingReply pingReply = ping.Send(curLink);
+								if (pingReply.RoundtripTime < pingValue)
+								{
+									bestLink = curLink;
+									pingValue = pingReply.RoundtripTime;
+								}
+							} catch (PingException ex) {
+								Console.WriteLine(curLink + ": " + ex.Message);
+							}
+						}
 
-                        PatchFileInfo pfi = new PatchFileInfo(bestLink, path, ex[1], Convert.ToInt64(ex[3]), ex[2]);
-                        patchQueue.Enqueue(pfi);
-                        totalBytes += Convert.ToInt64(ex[3]);
-                    }
+						PatchFileInfo pfi = new PatchFileInfo(bestLink, path, ex[1], Convert.ToInt64(ex[3]), ex[2]);
+						patchQueue.Enqueue(pfi);
+						totalBytes += Convert.ToInt64(ex[3]);
+					}
                 }
             }
 
