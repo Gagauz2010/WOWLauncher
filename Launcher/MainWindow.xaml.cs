@@ -475,8 +475,8 @@ namespace Launcher
 									bestLink = curLink;
 									pingValue = pingReply.RoundtripTime;
 								}
-							} catch (PingException ex) {
-								Console.WriteLine(curLink + ": " + ex.Message);
+							} catch (PingException exception) {
+								Console.WriteLine(curLink + ": " + exception.Message);
 							}
 						}
 
