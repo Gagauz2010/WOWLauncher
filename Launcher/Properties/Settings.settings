@@ -3,22 +3,22 @@
   <Profiles />
   <Settings>
     <Setting Name="PatchDownloadURL" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">https://dl.dropboxusercontent.com/u/50865248/work/launcher/patchlist.txt</Value>
+      <Value Profile="(Default)">https://www.dropbox.com/s/9jwyy206xxw51gp/patchlist.txt?dl=1</Value>
     </Setting>
     <Setting Name="PatchToDelete" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">https://dl.dropboxusercontent.com/u/50865248/work/launcher/patchtodel.txt</Value>
+      <Value Profile="(Default)">https://www.dropbox.com/s/gqhzb7q7igeu058/patchtodel.txt?dl=1</Value>
     </Setting>
     <Setting Name="launcherVersionUrl" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">https://dl.dropboxusercontent.com/u/50865248/work/launcher/version.txt</Value>
+      <Value Profile="(Default)">https://www.dropbox.com/s/5mt8l6yygd21gzi/version.txt?dl=1</Value>
     </Setting>
     <Setting Name="launcherNewsFileUrl" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">https://dl.dropboxusercontent.com/u/50865248/work/launcher/news.txt</Value>
+      <Value Profile="(Default)">https://www.dropbox.com/s/xl9sgprm0zpmbps/news.txt?dl=1</Value>
     </Setting>
     <Setting Name="launcherUpdates" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">https://dl.dropboxusercontent.com/u/50865248/work/launcher/updates.txt</Value>
+      <Value Profile="(Default)">https://www.dropbox.com/s/xu0wubztqckn9fi/updates.txt?dl=1</Value>
     </Setting>
     <Setting Name="realmlistURL" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">https://dl.dropboxusercontent.com/u/50865248/work/launcher/realmlist.txt</Value>
+      <Value Profile="(Default)">https://www.dropbox.com/s/ufpb35ihbf23j2q/realmlist.txt?dl=1</Value>
     </Setting>
     <Setting Name="username" Type="System.String" Scope="User">
       <Value Profile="(Default)" />

@@ -276,10 +276,17 @@ namespace Launcher
 
             try
             {
-                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(new Uri(Properties.Settings.Default.realmlistURL));
-                HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-                StreamReader sr = new StreamReader(response.GetResponseStream());
+                var request = (HttpWebRequest)WebRequest.Create(new Uri(Properties.Settings.Default.realmlistURL));
+                var response = (HttpWebResponse)request.GetResponse();
+                var sr = new StreamReader(response.GetResponseStream());
                 string realmlist = sr.ReadToEnd();
+
+                FileAttributes attributes = File.GetAttributes(rPath);
+                if ((attributes & FileAttributes.ReadOnly) == FileAttributes.ReadOnly)
+		        {
+		            attributes = Utils.Utils.RemoveAttribute(attributes, FileAttributes.ReadOnly);
+		            File.SetAttributes(rPath, attributes);
+		        } 
 
                 //TODO: COMMENT NEXT PART OF CODE IF CLIENT DOESN'T HAVE REALMLIST
                 #region <= 3.3.5 realmlist changer
@@ -587,9 +594,9 @@ namespace Launcher
 
             long dSpeed = (long)(Convert.ToDouble(double.Parse(currentBytes2.ToString(CultureInfo.InvariantCulture))) / sw.Elapsed.TotalSeconds);
 
-            received = detectSize(currentBytes);
-            total = detectSize(totalBytes);
-            speed = detectSize(dSpeed);
+            received = Utils.Utils.GetSize(currentBytes);
+            total = Utils.Utils.GetSize(totalBytes);
+            speed = Utils.Utils.GetSize(dSpeed);
 
             string downloaded = "Загружено (" + _count + "/" + _length + ") : " + received + "  /  " + total;
 
@@ -598,28 +605,6 @@ namespace Launcher
             labelprogress.Content = downloaded + " (" + speed + "/с)" + " ~" + ((int)(avaiting / 3600)).ToString("0") + " ч " + ((int)(avaiting % 3600 / 60)).ToString("0") + " мин " + (avaiting % 3600 % 60).ToString("0") + " сек";
 
             //labelmsg.Content = "Оставшееся время: " + ((int)(avaiting / 3600)).ToString("0") + " ч " + ((int)(avaiting % 3600 / 60)).ToString("0") + " мин " + (avaiting % 3600 % 60).ToString("0") + " сек";
-        }
-
-        /// <summary>
-        /// Convert bytes value to GB/MB/KB
-        /// </summary>
-        /// <param name="value">Byte value to convert into GB/MB/KB</param>
-        /// <returns>Converted bytes value like GB/MB/KB</returns>
-        private string detectSize(long value)
-        {
-            try
-            {
-                if (value >= 1073741824)
-                    return string.Format("{0:0.00}ГБ", double.Parse(value.ToString()) / 1024 / 1024 / 1024);
-                else if (value >= 1048576)
-                    return string.Format("{0:0.00}МБ", double.Parse(value.ToString()) / 1024 / 1024);
-                else
-                    return string.Format("{0:0}КБ", double.Parse(value.ToString()) / 1024);
-            }
-            catch
-            {
-                return "∞ Б";
-            }
         }
 
         /// <summary>
