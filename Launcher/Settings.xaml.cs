@@ -2,13 +2,14 @@
 using System.IO;
 using System.Windows;
 using System.Text.RegularExpressions;
+using Launcher.HelpClasses;
 
 namespace Launcher
 {
     /// <summary>
     /// Логика взаимодействия для Settings.xaml
     /// </summary>
-    public partial class Settings : Window
+    public partial class Settings
     {
 
 
@@ -17,119 +18,84 @@ namespace Launcher
             InitializeComponent();
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private void ButtonSave_Click(object sender, RoutedEventArgs e)
         {
-            Properties.Settings.Default.autologin = (autologin.IsChecked == true) ? true : false;
-            Properties.Settings.Default.username = user.Text;
-            Properties.Settings.Default.password = pass.Password;
-            Properties.Settings.Default.progressBarType = progressType.SelectedIndex;
-            Properties.Settings.Default.gameFolder = path.Text;
-            switch (speedType.SelectedIndex)
-            {
-                case 2:
-                    Properties.Settings.Default.downloadSpeedLimit = Convert.ToInt64(speedValue.Text) * 1024 * 1024 * 1024;
-                    break;
-                case 1:
-                    Properties.Settings.Default.downloadSpeedLimit = Convert.ToInt64(speedValue.Text) * 1024 * 1024;
-                    break;
-                case 0:
-                    Properties.Settings.Default.downloadSpeedLimit = Convert.ToInt64(speedValue.Text) * 1024;
-                    break;
-            }
+            Properties.Settings.Default.IsAutoLogin = (Autologin.IsChecked == true);
+            Properties.Settings.Default.Login = Login.Text;
+            Properties.Settings.Default.Password = Password.Password;
+            Properties.Settings.Default.ProgressBarType = ProgressType.SelectedIndex;
+            Properties.Settings.Default.GameFolder = Folder.Text;
+            Properties.Settings.Default.DownloadSpeedLimit =
+                (long)(Convert.ToDouble(SpeedValue.Text) * Math.Pow(1024, SpeedType.SelectedIndex + 1));
             Properties.Settings.Default.Save();
 
-            MainWindow m = Owner as MainWindow;
-            if (m.anyDownloads)
+            if (Owner is MainWindow m && m.AnyDownloads)
             {
-                m.currentBytes2 = 0;
-                m.currentFileBytes2 = 0;
+                m.CurrentBytes2 = 0;
+                m.CurrentFileBytes2 = 0;
 
-                m.sw.Stop();
-                m.sw.Reset();
-                m.sw.Start();
+                m.StopWatch.Stop();
+                m.StopWatch.Reset();
+                m.StopWatch.Start();
             }
             Close();
         }
 
-        private string detectSize(long value)
-        {
-            try
-            {
-                if (int.Parse(value.ToString()) >= 1073741824)
-                {
-                    speedType.SelectedIndex = 2;
-                    return string.Format("{0:0}", double.Parse(value.ToString()) / 1024 / 1024 / 1024);
-                    
-                }
-                else if (int.Parse(value.ToString()) >= 1048576)
-                {
-                    speedType.SelectedIndex = 1;
-                    return string.Format("{0:0}", double.Parse(value.ToString()) / 1024 / 1024); 
-                }
-                else
-                {
-                    speedType.SelectedIndex = 0;
-                    return string.Format("{0:0}", double.Parse(value.ToString()) / 1024);
-                }
-            }
-            catch
-            {
-                return "∞ Б";
-            }
-        }
 
-        private void window_Loaded(object sender, RoutedEventArgs e)
+        private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            user.Text = Properties.Settings.Default.username;
-            pass.Password = Properties.Settings.Default.password;
-            autologin.IsChecked = Properties.Settings.Default.autologin;
-            progressType.SelectedIndex = Properties.Settings.Default.progressBarType;
-            path.Text = Properties.Settings.Default.gameFolder;
-            speedValue.Text = detectSize(Properties.Settings.Default.downloadSpeedLimit);
+            Login.Text = Properties.Settings.Default.Login;
+            Password.Password = Properties.Settings.Default.Password;
+            Autologin.IsChecked = Properties.Settings.Default.IsAutoLogin;
+            ProgressType.SelectedIndex = Properties.Settings.Default.ProgressBarType;
+            Folder.Text = Properties.Settings.Default.GameFolder;
+
+            SpeedValue.Text = Utilities.Updater.DetectSize(Properties.Settings.Default.DownloadSpeedLimit, out var index);
+            SpeedType.SelectedIndex = index;
         }
 
         private void Button_Click_1(object sender, RoutedEventArgs e)
         {
-            System.Windows.Forms.FolderBrowserDialog folder = new System.Windows.Forms.FolderBrowserDialog();
-            folder.Description = "Выберите папку с клиентом игры";
-            folder.RootFolder = Environment.SpecialFolder.MyComputer;
-            folder.ShowNewFolderButton = false;
-            System.Windows.Forms.DialogResult result = folder.ShowDialog();
-            if (result == System.Windows.Forms.DialogResult.OK)
+            var folder = new System.Windows.Forms.FolderBrowserDialog
             {
-                if (File.Exists(folder.SelectedPath.ToString() + "\\Wow.exe"))
-                {
-                    string folderPath = folder.SelectedPath.ToString();
-                    path.Text = folderPath;
-                }
-                else
-                { MessageBox.Show("Файл \"Wow.exe\" не найден!\nПожалуйста выберите корректную папку с игрой!", "Ошибка выбора папки", MessageBoxButton.OK, MessageBoxImage.Error); }
+                Description = @"Выберите папку с клиентом игры",
+                RootFolder = Environment.SpecialFolder.MyComputer,
+                ShowNewFolderButton = false
+            };
+            var result = folder.ShowDialog();
+            if (result != System.Windows.Forms.DialogResult.OK) return;
+
+            if (File.Exists(Path.Combine(folder.SelectedPath, "Wow.exe")))
+            {
+                var folderPath = folder.SelectedPath;
+                Folder.Text = folderPath;
             }
+            else
+            { MessageBox.Show("Файл \"Wow.exe\" не найден!\nПожалуйста выберите корректную папку с игрой!", "Ошибка выбора папки", MessageBoxButton.OK, MessageBoxImage.Error); }
         }
 
-        private void resetPath_Click(object sender, RoutedEventArgs e)
+        private void ResetPath_Click(object sender, RoutedEventArgs e)
         {
-            path.Text = "Не задано";
+            Folder.Text = "Не задано";
         }
 
-        private void btn_del_Click(object sender, RoutedEventArgs e)
+        private void ButtonDelete_Click(object sender, RoutedEventArgs e)
         {
             if (MessageBox.Show("Вы действительно хотите удалить все загруженные файлы сервера?", "Подтверждение удаления", MessageBoxButton.YesNoCancel, MessageBoxImage.Question) == MessageBoxResult.Yes)
             {
-                MainWindow m = Owner as MainWindow;
-                m.DPatches();
+                if (Owner is MainWindow m) m.DPatches();
             }
 
         }
 
-        private void speedValue_PreviewTextInput(object sender, System.Windows.Input.TextCompositionEventArgs e)
+        private void SpeedValue_PreviewTextInput(object sender, System.Windows.Input.TextCompositionEventArgs e)
         {
             e.Handled = !IsTextAllowed(e.Text);
         }
 
         private static bool IsTextAllowed(string text)
         {
-            Regex regex = new Regex("[^0-9]+");
+            var regex = new Regex("[^0-9]+");
             return !regex.IsMatch(text);
         }
     }

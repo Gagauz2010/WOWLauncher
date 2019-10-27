@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Описание обновлений инструментария" AllowsTransparency="True" Height="300" Width="480" ResizeMode="NoResize" ShowInTaskbar="False" WindowStartupLocation="CenterScreen" Topmost="True" WindowStyle="None" Background="#00000000">
     <Grid>
-        <Rectangle Name="rectangle1" Stroke="Black" RadiusY="3" RadiusX="3" MouseDown="rectangle1_MouseDown">
+        <Rectangle Stroke="Black" RadiusY="3" RadiusX="3">
             <Rectangle.Fill>
                 <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                     <GradientStop Color="#FF6F7277" Offset="0.005" />
@@ -12,7 +12,7 @@
                 </LinearGradientBrush>
             </Rectangle.Fill>
         </Rectangle>
-        <Button x:Name="btn_close"  Margin="0,8,10,0" Style="{DynamicResource PlayButton}" Click="btn_close_Click" FontSize="16" Height="28" VerticalAlignment="Top" HorizontalAlignment="Right" Width="28" ToolTip="Закрыть окно" Padding="1" >
+        <Button x:Name="BtnClose"  Margin="0,8,10,0" Style="{DynamicResource PlayButton}" Click="BtnClose_Click" FontSize="16" Height="28" VerticalAlignment="Top" HorizontalAlignment="Right" Width="28" ToolTip="Закрыть окно" Padding="1" >
         	<Path
                     Width="16"
                     Height="16"
@@ -38,6 +38,6 @@
 
             </FlowDocument>
         </RichTextBox>
-        <Label MouseDown="rectangle1_MouseDown" Content="Описание обновлений программы" HorizontalAlignment="Left" Margin="12,8,0,0" Name="label1" Width="409" Foreground="White" FontWeight="Bold" FontSize="15" Height="32" VerticalAlignment="Top" />
+        <Label Content="Описание обновлений программы" HorizontalAlignment="Left" Margin="12,8,0,0" Width="420" Foreground="White" FontWeight="Bold" FontSize="15" Height="32" VerticalAlignment="Top" IsHitTestVisible="False" />
     </Grid>
 </Window>

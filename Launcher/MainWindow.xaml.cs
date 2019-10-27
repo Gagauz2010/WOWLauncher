@@ -1,6 +1,6 @@
 ﻿// Данный програмный продукт является результатом труда и стараний Jumper'а
 // Все права и копирайты закреплены за ним
-// (c) 2011-2016 год
+// (c) 2011-2019 год
 //--------------------------------------------------------------------
 //----### ------------------------------------------------------------
 //----###---###-----##----#-------##----#######---#######---######----
@@ -17,11 +17,11 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
@@ -33,6 +33,8 @@ using System.Windows.Documents;
 using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media.Effects;
+using System.Windows.Shell;
+using Launcher.HelpClasses;
 using Application = System.Windows.Application;
 using Cursor = System.Windows.Input.Cursor;
 using Cursors = System.Windows.Input.Cursors;
@@ -48,40 +50,11 @@ namespace Launcher
     {
         #region Variables
 
-        #region The Classic Window API
-        //SetWindowLong lets you set a window style
-        [DllImport("user32.dll")]
-        static extern int SetWindowLong(IntPtr hWnd, int nIndex, long dwNewLong);
-        #endregion
-
-        const int GWL_STYLE = -16;
-        const long WS_POPUP = 2147483648;
-
         #region dll's;
-        public const int WmNclbuttondown = 0xA1;
-        public const int HtCaption = 0x2;
 
         [DllImport("user32.dll")]
-        public static extern int SendMessage(IntPtr hWnd, int msg, int wParam, int lParam);
-        [DllImport("user32.dll")]
-        public static extern bool ReleaseCapture();
+        private static extern IntPtr SendMessage(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
 
-        #endregion dll's;
-
-        #region const;
-        private Queue<PatchFileInfo> patchQueue = new Queue<PatchFileInfo>();
-        private delegate void UpdateProgress(int percent, long bytesReceived, long totalBytesReceive);
-        private delegate void MakeVisibleInvisible(bool visible);
-        private delegate void MakeLoadTextIndicator(string text);
-        private string tempPath = Path.GetTempFileName();
-        public Stopwatch sw = new Stopwatch();
-        int _count, _length;
-        string _gPath, _pListUri, _pListDel;
-        public bool anyDownloads;
-        private long totalBytes = 0, currentBytes = 0, currentFileBytes = 0;
-        public long currentBytes2 = 0, currentFileBytes2 = 0;
-
-        #endregion const;
 
         private const uint WmKeydown = 0x0100;
         private const uint WmKeyup = 0x0101;
@@ -89,9 +62,31 @@ namespace Launcher
         private const int VkReturn = 0x0D;
         private const int VkTab = 0x09;
 
-        [DllImport("user32.dll")]
-        private static extern IntPtr SendMessage(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
-        
+        #endregion dll's;
+
+        #region const;
+        private delegate void UpdateProgress(int percent, long bytesReceived, long totalBytesReceive);
+        private delegate void MakeVisibleInvisible(bool visible);
+
+        private readonly Queue<PatchFileInfo> _patchQueue = new Queue<PatchFileInfo>();
+
+        private readonly string _tempPath = Path.GetTempFileName();
+        private static readonly string AppRoamingPath = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), 
+            Assembly.GetEntryAssembly()?.GetName().Name ?? "Launcher");
+        private readonly string _updatePath = Path.Combine(AppRoamingPath, "UpdatedFiles.json");
+
+        public Stopwatch StopWatch = new Stopwatch();
+
+        private Dictionary<string, string> _filesCompleted = new Dictionary<string, string>();
+        private int _count, _length;
+        private string _gPath, _pListUri, _pListDel;
+        public bool AnyDownloads;
+        private long _totalBytes, _currentBytes, _currentFileBytes;
+        public long CurrentBytes2, CurrentFileBytes2;
+
+        #endregion const;
+
         #endregion
 
         /// <summary>
@@ -99,26 +94,25 @@ namespace Launcher
         /// </summary>
         private class PatchFileInfo
         {
-            public string Url { get; set; }
-            public string File { get; set; }
-            public string FileName { get; set; }
-            public string Md5Hash { get; set; }
-            public long FileBytes { get; set; }
+            public string Url { get; }
+            public string Name { get; }
+            public string File { get; }
+            public string Md5Hash { get; }
+            public long FileBytes { get; }
 
             /// <summary>
             /// Class initializer
             /// </summary>
             /// <param name="url">direct download url</param>
             /// <param name="file"></param>
-            /// <param name="filename">Name of file</param>
-            /// <param name="filebytes">File size in bytes</param>
+            /// <param name="fileBytes">File size in bytes</param>
             /// <param name="md5">MD5 hash</param>
-            public PatchFileInfo(string url, string file, string filename, long filebytes, string md5)
+            public PatchFileInfo(string url, string name, string file, long fileBytes, string md5)
             {
                 Url = url;
+                Name = name;
                 File = file;
-                FileBytes = filebytes;
-                FileName = filename;
+                FileBytes = fileBytes;
                 Md5Hash = md5;
             }
         }
@@ -127,18 +121,18 @@ namespace Launcher
         {
             InitializeComponent();
 
-            Stream normalCursor = Application.GetResourceStream(new Uri("pack://application:,,,/img/cursors/wow.cur")).Stream;
-            Stream readlCursor = Application.GetResourceStream(new Uri("pack://application:,,,/img/cursors/WOW-ESCRIVIR.cur")).Stream;
-            Stream hightlCursor = Application.GetResourceStream(new Uri("pack://application:,,,/img/cursors/WOW-ENLACE-CURSOR.cur")).Stream;
+            var normalCursor = Application.GetResourceStream(new Uri("pack://application:,,,/img/cursors/wow.cur"))?.Stream;
+            var readlCursor = Application.GetResourceStream(new Uri("pack://application:,,,/img/cursors/WOW-ESCRIVIR.cur"))?.Stream;
+            var hightlCursor = Application.GetResourceStream(new Uri("pack://application:,,,/img/cursors/WOW-ENLACE-CURSOR.cur"))?.Stream;
 
-            //this.Cursor = new Cursor(_normalCursor);
-            MainGrid.Cursor = new Cursor(normalCursor);
-            version.Cursor = new Cursor(hightlCursor);
-            NewsBox.Cursor = new Cursor(readlCursor);
+            MainGrid.Cursor = new Cursor(normalCursor ?? throw new NullReferenceException("Не найден ресурс wow.cur"));
+            version.Cursor = new Cursor(hightlCursor ?? throw new NullReferenceException("Не найден ресурс WOW-ESCRIVIR.cur"));
+            NewsBox.Cursor = new Cursor(readlCursor ?? throw new NullReferenceException("Не найден ресурс WOW-ENLACE-CURSOR.cur"));
 
-            SetProgressType(Properties.Settings.Default.progressBarType);
+            SetProgressType(Properties.Settings.Default.ProgressBarType);
 
-            if (CheckForInternetConnection())
+            Directory.CreateDirectory(AppRoamingPath);
+            if (Utilities.Network.IsInternetConnectionAvailable())
             {
                 FileSync();
             }
@@ -150,42 +144,22 @@ namespace Launcher
         }
 
         /// <summary>
-        /// Internet connection checker
-        /// </summary>
-        /// <returns>Returns true if connection exist</returns>
-        public static bool CheckForInternetConnection()
-        {
-            try
-            {
-                using (var client = new WebClient())
-                using (var stream = client.OpenRead("http://www.google.com"))
-                {
-                    return true;
-                }
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        /// <summary>
         /// Start file sync by game folder (if it was set before)
         /// </summary>
         private void FileSync()
         {
-            if (Properties.Settings.Default.gameFolder.Equals("Не задано"))
-                if (File.Exists(string.Format(@"{0}\Wow.exe", AppDomain.CurrentDomain.BaseDirectory)))
+            if (Properties.Settings.Default.GameFolder.Equals("Не задано"))
+                if (File.Exists($@"{AppDomain.CurrentDomain.BaseDirectory}\Wow.exe"))
                 {
                     UpdateClient(AppDomain.CurrentDomain.BaseDirectory);
                 }
                 else
                 {
-                    MessageBoxResult result = MessageBox.Show("Файл \"Wow.exe\" не найден!\nПожалуйста посместите программу в папку с игрой или укажите путь к папке с игрой!\n\nУказать путь сейчас?", "Ошибка местоположения", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                    var result = MessageBox.Show("Файл \"Wow.exe\" не найден!\nПожалуйста посместите программу в папку с игрой или укажите путь к папке с игрой!\n\nУказать путь сейчас?", "Ошибка местоположения", MessageBoxButton.YesNo, MessageBoxImage.Question);
                     TryToFindFolder(result);
                 }
             else
-                UpdateClient(Properties.Settings.Default.gameFolder);
+                UpdateClient(Properties.Settings.Default.GameFolder);
         }
 
         /// <summary>
@@ -193,23 +167,25 @@ namespace Launcher
         /// </summary>
         private void ShowFolderDialog()
         {
-            FolderBrowserDialog folder = new System.Windows.Forms.FolderBrowserDialog();
-            folder.Description = "Выберите папку с клиентом игры";
-            folder.RootFolder = Environment.SpecialFolder.MyComputer;
-            folder.ShowNewFolderButton = false;
-            DialogResult result = folder.ShowDialog();
+            var folder = new FolderBrowserDialog
+            {
+                Description = @"Выберите папку с клиентом игры",
+                RootFolder = Environment.SpecialFolder.MyComputer,
+                ShowNewFolderButton = false
+            };
+            var result = folder.ShowDialog();
             if (result == System.Windows.Forms.DialogResult.OK)
             {
-                if (File.Exists(string.Format(@"{0}\Wow.exe", folder.SelectedPath.ToString())))
+                if (File.Exists(Path.Combine(folder.SelectedPath, "Wow.exe")))
                 {
-                    string folderPath = folder.SelectedPath.ToString();
-                    Properties.Settings.Default.gameFolder = folderPath;
+                    var folderPath = folder.SelectedPath;
+                    Properties.Settings.Default.GameFolder = folderPath;
                     Properties.Settings.Default.Save();
                     FileSync();
                 }
                 else
                 {
-                    MessageBoxResult retryResult = MessageBox.Show("В выбранной папке файл \"Wow.exe\" не найден!\nПожалуйста выберите корректную папку с игрой!\n\nПовторить попытку выбора?", "Ошибка выбора папки", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                    var retryResult = MessageBox.Show("В выбранной папке файл \"Wow.exe\" не найден!\nПожалуйста выберите корректную папку с игрой!\n\nПовторить попытку выбора?", "Ошибка выбора папки", MessageBoxButton.YesNo, MessageBoxImage.Question);
                     TryToFindFolder(retryResult);
                 }
             }
@@ -240,12 +216,12 @@ namespace Launcher
         /// <param name="gPath">Wow game root folder</param>
         private void UpdateClient(string gPath)
         {
-            FileVersionInfo clientVersion = FileVersionInfo.GetVersionInfo(String.Format(@"{0}\Wow.exe", gPath));
-            string[] v = clientVersion.FileVersion.Split(char.Parse(","));
+            var clientVersion = FileVersionInfo.GetVersionInfo(Path.Combine(gPath, "Wow.exe"));
+            var v = clientVersion.FileVersion.Split(char.Parse(","));
 
             // Client version detection. Select right patch files to downloading and deletion
-            switch (v[3]) {
-                case " 12340":
+            switch (v[3].Trim()) {
+                case "12340":
                     _pListUri = Properties.Settings.Default.PatchDownloadURL;
                     _pListDel = Properties.Settings.Default.PatchToDelete;
                     break;
@@ -258,13 +234,13 @@ namespace Launcher
                 //    _pListDel = Properties.Settings.Default.PatchToDelete;
                 default:
                     //TODO: CHANGE SERVER NAME AND CLIENT VERSION
-                    MessageBoxResult result = MessageBox.Show("Для игры на сервере %SERVER-NAME% требуется клиент версии 3.3.5.12340! Поместите программу в корректную папку с игрой или укажите путь к папке!\n\nУказать путь сейчас?", "Ошибка версии клиента", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                    var result = MessageBox.Show("Для игры на сервере %SERVER-NAME% требуется клиент версии 3.3.5.12340! Поместите программу в корректную папку с игрой или укажите путь к папке!\n\nУказать путь сейчас?", "Ошибка версии клиента", MessageBoxButton.YesNo, MessageBoxImage.Question);
                     TryToFindFolder(result);
                     break;
             }
 
-            string rPath = String.Format(@"{0}\Data\ruRU\realmlist.wtf", gPath);
-            string cPath = String.Format(@"{0}\Cache", gPath);
+            var rPath = Path.Combine(gPath, @"Data\ruRU\realmlist.wtf");
+            var cPath = Path.Combine(gPath,  "Cache");
             _gPath = gPath;
 
             try
@@ -272,25 +248,27 @@ namespace Launcher
                 Directory.Delete(cPath, true);
             }
             catch (Exception)
-            { }
+            {
+                // ignored
+            }
 
             try
             {
-                var request = (HttpWebRequest)WebRequest.Create(new Uri(Properties.Settings.Default.realmlistURL));
+                var request = (HttpWebRequest)WebRequest.Create(new Uri(Properties.Settings.Default.RealmlistURL));
                 var response = (HttpWebResponse)request.GetResponse();
-                var sr = new StreamReader(response.GetResponseStream());
-                string realmlist = sr.ReadToEnd();
+                var sr = new StreamReader(response.GetResponseStream() ?? throw new InvalidOperationException($@"Ошибка получения ответа от {Properties.Settings.Default.RealmlistURL}"));
+                var realmlist = sr.ReadToEnd();
 
-                FileAttributes attributes = File.GetAttributes(rPath);
+                var attributes = File.GetAttributes(rPath);
                 if ((attributes & FileAttributes.ReadOnly) == FileAttributes.ReadOnly)
 		        {
-		            attributes = Utils.Utils.RemoveAttribute(attributes, FileAttributes.ReadOnly);
+		            attributes = Utilities.File.RemoveAttribute(attributes, FileAttributes.ReadOnly);
 		            File.SetAttributes(rPath, attributes);
 		        } 
 
                 //TODO: COMMENT NEXT PART OF CODE IF CLIENT DOESN'T HAVE REALMLIST
                 #region <= 3.3.5 realmlist changer
-                StreamWriter writer = new StreamWriter(rPath);
+                var writer = new StreamWriter(rPath);
                 writer.WriteLine(realmlist);
                 writer.Flush();
                 writer.Close();
@@ -329,54 +307,39 @@ namespace Launcher
         /// </summary>
         private void LoadNews()
         {
-            news_box.SetNews(Properties.Settings.Default.launcherNewsFileUrl);
+            news_box.SetNews(Properties.Settings.Default.LauncherNewsFileUrl);
 			
 			AutoUpdate();
             IsEnabled = true;
         }
 		
         /// <summary>
-        /// Delete old patches or old evential updates
+        /// Delete old patches or old eventual updates
         /// </summary>
         private void DeleteOldPatches()
         {
             var request = (HttpWebRequest)WebRequest.Create(new Uri(_pListDel));
             var response = (HttpWebResponse)request.GetResponse();
 
-            var reader = new StreamReader(response.GetResponseStream());
+            var reader = new StreamReader(response.GetResponseStream() ?? throw new InvalidOperationException($@"Ошибка получения ответа от {_pListDel}"));
 
             string line;
 
             while ((line = reader.ReadLine()) != null)
             {
-                string path = SetPath(line);
+                var path = Utilities.Updater.GetPath(_gPath, line);
 
                 try
                 {
                     File.Delete(path);
                 }
                 catch (Exception)
-                { }
+                {
+                    // ignored
+                }
             }
 
             LoadNews();
-        }
-
-        /// <summary>
-        /// Set path to files from update list
-        /// </summary>
-        /// <param name="item">File to download for update</param>
-        /// <returns>Full path to downloadable file</returns>
-        private string SetPath(string item)
-        {
-            string path;
-            if (item.ToLower().Contains(".mpq") && item.Contains("-ruRU-"))
-                path = String.Format(@"{0}\Data\ruRU\{1}", _gPath, item);
-            else
-                path = String.Format(@"{0}\Data\{1}", _gPath, item);
-            if (item.ToLower().Contains(".exe"))
-                path = String.Format(@"{0}\{1}", _gPath, item);
-            return path;
         }
 
         /// <summary>
@@ -384,227 +347,235 @@ namespace Launcher
         /// </summary>
         private void AutoUpdate()
         {
-            var request = (HttpWebRequest)WebRequest.Create(new Uri(Properties.Settings.Default.launcherVersionUrl));
+            var request = (HttpWebRequest)WebRequest.Create(new Uri(Properties.Settings.Default.LauncherVersionUrl));
             var response = (HttpWebResponse)request.GetResponse();
-            StreamReader sr = new StreamReader(response.GetResponseStream());
-            string newVersion = sr.ReadToEnd();
+            var sr = new StreamReader(response.GetResponseStream() ?? throw new InvalidOperationException($@"Ошибка получения ответа от {Properties.Settings.Default.LauncherVersionUrl}"));
+            var newVersion = sr.ReadToEnd();
 
-            Assembly assem = Assembly.GetExecutingAssembly();
-            AssemblyName assemName = assem.GetName();
-            Version ver = assemName.Version;
+            var assembly = Assembly.GetExecutingAssembly();
+            var assemblyName = assembly.GetName();
+            var ver = assemblyName.Version;
 
-            string currentVersion = ver.ToString();
-            version.Content = "ver. " + currentVersion;
+            var currentVersion = ver.ToString();
+            version.Content = $@"ver. {currentVersion}";
 
             DownloadBar.Visibility = Visibility.Hidden;
 
             if (newVersion.Contains(currentVersion))
             {
-                if (Properties.Settings.Default.PatchDownloadURL != string.Empty)
-                {
-                    var startDownloadBackgroundWorker = new BackgroundWorker();
-                    startDownloadBackgroundWorker.DoWork += startDownloadBackgroundWorker_DoWork;
+                if (Properties.Settings.Default.PatchDownloadURL == string.Empty) return;
 
-                    //DownloadBar.Visibility = Visibility.Visible;
-                    btn_play.IsEnabled = false;
-                    TaskbarPlay.IsEnabled = false;
-                    progress.Value = 0;
-                    labelmsg.Content = "Инициализация...";
-                    _count = 0;
-                    startDownloadBackgroundWorker.RunWorkerAsync();
-                }
+                var startDownloadBackgroundWorker = new BackgroundWorker();
+                startDownloadBackgroundWorker.DoWork += startDownloadBackgroundWorker_DoWork;
+
+                //DownloadBar.Visibility = Visibility.Visible;
+                btn_play.IsEnabled = false;
+                TaskbarPlay.IsEnabled = false;
+                progress.Value = 0;
+                labelmsg.Content = "Инициализация...";
+                _count = 0;
+                startDownloadBackgroundWorker.RunWorkerAsync();
             }
             else
             {
-                LNewVer lver = new LNewVer();
-                lver.ShowDialog();
+                var launcherNewVersion = new LNewVer();
+                launcherNewVersion.ShowDialog();
             }
         }
 
         private void startDownloadBackgroundWorker_DoWork(object sender, DoWorkEventArgs e)
         {
             var client = new WebClient();
-
             client.DownloadFileCompleted += client_DownloadFileCompleted;
-
-            client.DownloadFileAsync(new Uri(_pListUri), tempPath);
-
-            sw.Start();
+            client.DownloadFileAsync(new Uri(_pListUri), _tempPath);
+            StopWatch.Start();
         }
 
         private void client_DownloadFileCompleted(object sender, AsyncCompletedEventArgs e)
         {
-            _length = File.ReadAllLines(tempPath).Length;
+            _length = File.ReadAllLines(_tempPath).Length;
 
-            using (StreamReader reader = new StreamReader(tempPath))
+            // Get map of downloaded files
+            if (File.Exists(_updatePath))
+            {
+                _filesCompleted = JsonSerializer<Dictionary<string, string>>.FromString(
+                    File.ReadAllText(_updatePath));
+            }
+
+            using (var reader = new StreamReader(_tempPath))
             {
                 string line;
 
                 while ((line = reader.ReadLine()) != null)
                 {
-                    string[] ex = line.Split(char.Parse("#"));
-                    string path = SetPath(ex[1]);
 
-                    bool proceed = true;
+                    var ex = line.Split(char.Parse("#"));
+                    var path = Utilities.Updater.GetPath(_gPath, ex[1]);
+                    var pfi = new PatchFileInfo(ex[0], ex[1], path, Convert.ToInt64(ex[3]), ex[2]);
+
 
                     if (File.Exists(path))
                     {
-                        FileStream fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
-                        MD5 md5 = new MD5CryptoServiceProvider();
-                        byte[] retVal = md5.ComputeHash(fs);
-                        fs.Close();
-                        StringBuilder sb = new StringBuilder();
-                        foreach (byte b in retVal)
+                        if (_filesCompleted.TryGetValue(pfi.Name, out var hash) && hash == pfi.Md5Hash)
                         {
-                            sb.Append(string.Format("{0:X2}", b));
+                            // Ignore downloaded file
+                            _count++;
+                            continue;
                         }
 
-                        if (ex[2] == sb.ToString())
+                        var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+                        MD5 md5 = new MD5CryptoServiceProvider();
+                        var retVal = md5.ComputeHash(fs);
+                        fs.Close();
+                        var sb = new StringBuilder();
+                        foreach (var b in retVal)
                         {
-                            proceed = false;
+                            sb.Append($"{b:X2}");
+                        }
+
+                        if (pfi.Md5Hash == sb.ToString())
+                        {
+                            // Ignore matched file and add to completed map
+                            _filesCompleted.Add(pfi.Name, pfi.Md5Hash);
                             _count++;
+                            continue;
                         }
                     }
 
-                    if (proceed)
-					{
-						string[] link = ex[0].Split(char.Parse("Ø"));
-						long pingValue = long.MaxValue;
-						string bestLink = link[0];
-
-						foreach (string curLink in link)
-						{
-							try {
-								Ping ping = new Ping();
-								PingReply pingReply = ping.Send(curLink);
-								if (pingReply.RoundtripTime < pingValue)
-								{
-									bestLink = curLink;
-									pingValue = pingReply.RoundtripTime;
-								}
-							} catch (PingException exception) {
-								Console.WriteLine(curLink + ": " + exception.Message);
-							}
-						}
-
-						PatchFileInfo pfi = new PatchFileInfo(bestLink, path, ex[1], Convert.ToInt64(ex[3]), ex[2]);
-						patchQueue.Enqueue(pfi);
-						totalBytes += Convert.ToInt64(ex[3]);
-					}
+                    _filesCompleted.Remove(pfi.Name);
+                    _patchQueue.Enqueue(pfi);
+                    _totalBytes += pfi.FileBytes;
                 }
             }
 
 
-            while (patchQueue.Count != 0)
+            while (_patchQueue.Count != 0)
             {
-                sw.Start();
-                anyDownloads = true;
-                Dispatcher.Invoke(new MakeVisibleInvisible(DownloadCompleted), new object[] { true });
+                StopWatch.Start();
+                AnyDownloads = true;
+                Dispatcher.Invoke(new MakeVisibleInvisible(DownloadCompleted), true);
 
-                PatchFileInfo pfi = patchQueue.Dequeue();
-                long existLen = 0;
-                bool append = false;
-                string currFile = string.Format("{0}.{1}.upd", pfi.File, pfi.Md5Hash);
+                var pfi = _patchQueue.Dequeue();
+                var append = false;
+                var currentFile = $"{pfi.File}.{pfi.Md5Hash}.upd";
 
                 var httpReq = (HttpWebRequest)WebRequest.Create(pfi.Url);
 
-                if (File.Exists(currFile))
+                if (File.Exists(currentFile))
                 {
-                    FileInfo destinationFileInfo = new FileInfo(currFile);
-                    existLen = destinationFileInfo.Length;
+                    var destinationFileInfo = new FileInfo(currentFile);
+                    var existedLength = destinationFileInfo.Length;
 
-                    currentFileBytes += existLen;
-                    currentBytes += existLen;
-                    httpReq.AddRange((int)existLen);
+                    _currentFileBytes += existedLength;
+                    _currentBytes += existedLength;
+                    httpReq.AddRange((int)existedLength);
                     append = true;
                 }
 
-                var httpRes = (HttpWebResponse)httpReq.GetResponse();
-                Stream resStream = httpRes.GetResponseStream();
-
-                using (var file = (append == true) ? new FileStream(currFile, FileMode.Append, FileAccess.Write, FileShare.ReadWrite) : new FileStream(currFile, FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
+                try
                 {
-                    int bufferSize = 1024*4;
-                    var buffer = new byte[bufferSize];
-                    int bytesReceived;
+                    var httpRes = (HttpWebResponse)httpReq.GetResponse();
+                    var resStream = httpRes.GetResponseStream();
 
-                    while ((bytesReceived = resStream.Read(buffer, 0, buffer.Length)) != 0)
+                    using (var file = append ? new FileStream(currentFile, FileMode.Append, FileAccess.Write, FileShare.ReadWrite) : new FileStream(currentFile, FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
                     {
-                        file.Write(buffer, 0, bytesReceived);
+                        const int bufferSize = 1024 * 4;
+                        var buffer = new byte[bufferSize];
+                        int bytesReceived;
 
-                        try
+                        while (resStream != null && (bytesReceived = resStream.Read(buffer, 0, buffer.Length)) != 0)
                         {
-                            Dispatcher.Invoke(new UpdateProgress(UpdateProgressbar), new object[] { 0, (int)bytesReceived, Convert.ToInt32(pfi.FileBytes) });
+                            file.Write(buffer, 0, bytesReceived);
 
-                            if (Properties.Settings.Default.downloadSpeedLimit > 0)
+                            try
                             {
-                                if (currentFileBytes2 * 1000L / sw.Elapsed.TotalMilliseconds > Properties.Settings.Default.downloadSpeedLimit)
+                                Dispatcher.Invoke(new UpdateProgress(UpdateProgressbar), new object[] { 0, bytesReceived, Convert.ToInt32(pfi.FileBytes) });
+
+                                if (Properties.Settings.Default.DownloadSpeedLimit > 0)
                                 {
-                                    long wakeElapsed = currentFileBytes2 * 1000L / Properties.Settings.Default.downloadSpeedLimit;
-                                    int toSleep = (int)(wakeElapsed - sw.Elapsed.TotalMilliseconds);
-                                    if (toSleep > 1)
+                                    if (CurrentFileBytes2 * 1000L / StopWatch.Elapsed.TotalMilliseconds > Properties.Settings.Default.DownloadSpeedLimit)
                                     {
-                                        try
+                                        var wakeElapsed = CurrentFileBytes2 * 1000L / Properties.Settings.Default.DownloadSpeedLimit;
+                                        var toSleep = (int)(wakeElapsed - StopWatch.Elapsed.TotalMilliseconds);
+                                        if (toSleep > 1)
                                         {
-                                            Thread.Sleep(toSleep);
+                                            try
+                                            {
+                                                Thread.Sleep(toSleep);
+                                            }
+                                            catch (ThreadAbortException) { }
                                         }
-                                        catch (ThreadAbortException) { }
                                     }
                                 }
                             }
+                            catch (Exception)
+                            {
+                                // ignored
+                            }
                         }
-                        catch (Exception) { }
                     }
+
+                    _count++;
+
+                    File.Delete(pfi.File);
+                    File.Move(currentFile, pfi.File);
+                    _filesCompleted.Add(pfi.Name, pfi.Md5Hash);
+                    _currentFileBytes = 0; CurrentFileBytes2 = 0;
+                    // TODO: write downloaded file to App Directory
                 }
+                catch (Exception ex)
+                {
+                    var message = ex.Message;
 
-                _count++;
+                    if (ex is WebException)
+                    {
+                        message = $@"{pfi.Url}{Environment.NewLine}{Environment.NewLine}{ex.Message}";
+                    }
 
-                File.Delete(pfi.File);
-                File.Move(currFile, pfi.File);
-                currentFileBytes = 0; currentFileBytes2 = 0;
+                    MessageBox.Show(message, ex.Source, MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
 
-            Dispatcher.Invoke(new MakeVisibleInvisible(DownloadCompleted), new object[] { false });
+            Dispatcher.Invoke(new MakeVisibleInvisible(DownloadCompleted), false);
 
-            anyDownloads = false;
-            sw.Stop();
-            sw.Reset();
+            AnyDownloads = false;
+            StopWatch.Stop();
+            StopWatch.Reset();
 
-            var fileGenerationDir = new DirectoryInfo(_gPath);
-            fileGenerationDir.GetFiles("*.upd", SearchOption.AllDirectories).ToList().ForEach(file => file.Delete());
+            new DirectoryInfo(_gPath).GetFiles("*.upd", SearchOption.AllDirectories).ToList().ForEach(file => file.Delete());
+            using (var file = File.CreateText(_updatePath))
+            {
+                file.WriteLine(JsonSerializer<Dictionary<string, string>>.ToString(_filesCompleted));
+            }
         }
 
         private void UpdateProgressbar(int percent, long bytesReceived, long totalBytesToReceive)
         {
-            string received;
-            string total;
-            string speed;
+            if (percent < 0) throw new ArgumentOutOfRangeException(nameof(percent));
 
-            currentBytes += bytesReceived;
-            currentBytes2 += bytesReceived;
-            currentFileBytes += bytesReceived;
-            currentFileBytes2 += bytesReceived;
+            _currentBytes += bytesReceived;
+            CurrentBytes2 += bytesReceived;
+            _currentFileBytes += bytesReceived;
+            CurrentFileBytes2 += bytesReceived;
 
-            int percentt = Convert.ToInt16((Convert.ToDouble(double.Parse(currentBytes.ToString(CultureInfo.InvariantCulture))) / 1024 / 1024) / (Convert.ToDouble(double.Parse(totalBytes.ToString(CultureInfo.InvariantCulture))) / 1024 / 1024 / 100));
-            percent = Convert.ToInt16((Convert.ToDouble(double.Parse(currentFileBytes.ToString(CultureInfo.InvariantCulture))) / 1024 / 1024) / (Convert.ToDouble(double.Parse(totalBytesToReceive.ToString(CultureInfo.InvariantCulture))) / 1024 / 1024 / 100));
+            int percentTotal = Convert.ToInt16((Convert.ToDouble(double.Parse(_currentBytes.ToString(CultureInfo.InvariantCulture))) / 1024 / 1024) / (Convert.ToDouble(double.Parse(_totalBytes.ToString(CultureInfo.InvariantCulture))) / 1024 / 1024 / 100));
+            percent = Convert.ToInt16((Convert.ToDouble(double.Parse(_currentFileBytes.ToString(CultureInfo.InvariantCulture))) / 1024 / 1024) / (Convert.ToDouble(double.Parse(totalBytesToReceive.ToString(CultureInfo.InvariantCulture))) / 1024 / 1024 / 100));
 
-            TaskbarProgress.ProgressValue = Convert.ToDouble(percentt) / 100;
-            progress.Value = percentt;
+            TaskbarProgress.ProgressValue = Convert.ToDouble(percentTotal) / 100;
+            progress.Value = percentTotal;
             progress_file.Value = percent;
 
-            long dSpeed = (long)(Convert.ToDouble(double.Parse(currentBytes2.ToString(CultureInfo.InvariantCulture))) / sw.Elapsed.TotalSeconds);
+            var dSpeed = (long)(Convert.ToDouble(double.Parse(CurrentBytes2.ToString(CultureInfo.InvariantCulture))) / StopWatch.Elapsed.TotalSeconds);
 
-            received = Utils.Utils.GetSize(currentBytes);
-            total = Utils.Utils.GetSize(totalBytes);
-            speed = Utils.Utils.GetSize(dSpeed);
+            var received = Utilities.Updater.DetectSize(_currentBytes);
+            var total = Utilities.Updater.DetectSize(_totalBytes);
+            var speed = Utilities.Updater.DetectSize(dSpeed);
 
-            string downloaded = "Загружено (" + _count + "/" + _length + ") : " + received + "  /  " + total;
+            var downloaded = $@"Загружено ({_count}/{_length}) : {received} /  {total}";
 
-            double avaiting = (Convert.ToDouble(totalBytes - (currentBytes - currentBytes2)) / 1024) / (Convert.ToDouble(currentBytes2) / 1024 / sw.Elapsed.TotalSeconds) - (Convert.ToDouble(currentBytes2) / 1024) / (Convert.ToDouble(currentBytes2) / 1024 / sw.Elapsed.TotalSeconds);
+            var awaiting = (Convert.ToDouble(_totalBytes - (_currentBytes - CurrentBytes2)) / 1024) / (Convert.ToDouble(CurrentBytes2) / 1024 / StopWatch.Elapsed.TotalSeconds) - (Convert.ToDouble(CurrentBytes2) / 1024) / (Convert.ToDouble(CurrentBytes2) / 1024 / StopWatch.Elapsed.TotalSeconds);
 
-            labelprogress.Content = downloaded + " (" + speed + "/с)" + " ~" + ((int)(avaiting / 3600)).ToString("0") + " ч " + ((int)(avaiting % 3600 / 60)).ToString("0") + " мин " + (avaiting % 3600 % 60).ToString("0") + " сек";
-
-            //labelmsg.Content = "Оставшееся время: " + ((int)(avaiting / 3600)).ToString("0") + " ч " + ((int)(avaiting % 3600 / 60)).ToString("0") + " мин " + (avaiting % 3600 % 60).ToString("0") + " сек";
+            labelprogress.Content = $@"{downloaded}  ({speed}/с) ~{((int)(awaiting / 3600)):0} ч {((int)(awaiting % 3600 / 60)):0} мин {(awaiting % 3600 % 60):0} сек";
         }
 
         /// <summary>
@@ -616,7 +587,7 @@ namespace Launcher
             if (visible)
             {
                 DownloadBar.Visibility = Visibility.Visible;
-                TaskbarProgress.ProgressState = System.Windows.Shell.TaskbarItemProgressState.Normal;
+                TaskbarProgress.ProgressState = TaskbarItemProgressState.Normal;
                 TaskbarPlay.IsEnabled = false;
                 btn_play.IsEnabled = false;
                 labelmsg.Content = "Идет обновление...";
@@ -624,7 +595,7 @@ namespace Launcher
             else
             {
                 DownloadBar.Visibility = Visibility.Hidden;
-                TaskbarProgress.ProgressState = System.Windows.Shell.TaskbarItemProgressState.None;
+                TaskbarProgress.ProgressState = TaskbarItemProgressState.None;
                 TaskbarPlay.IsEnabled = true;
                 labelmsg.Content = "Игра обновлена";
                 btn_play.IsEnabled = true;
@@ -649,24 +620,26 @@ namespace Launcher
         /// </summary>
         public void DPatches()
         {
-            _length = File.ReadAllLines(tempPath).Length;
+            _length = File.ReadAllLines(_tempPath).Length;
 
-            using (var reader = new StreamReader(tempPath))
+            using (var reader = new StreamReader(_tempPath))
             {
                 string line;
 
                 while ((line = reader.ReadLine()) != null)
                 {
-                    string[] ex = line.Split(char.Parse("#"));
+                    var ex = line.Split(char.Parse("#"));
 
-                    string path = SetPath(ex[1]);
+                    var path = Utilities.Updater.GetPath(_gPath, ex[1]);
 
                     try
                     {
                         File.Delete(path);
                     }
                     catch
-                    { }
+                    {
+                        // ignored
+                    }
                 }
 
                 MessageBox.Show("Все файлы успешно удалены", "Удаление файлов", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -685,20 +658,17 @@ namespace Launcher
         {
             switch (index)
             {
-                // Mixed files download progress
-                case (0):
+                case 0:
                     totalProgressGrid.SetValue(Grid.RowProperty, 1);
                     totalProgressGrid.Visibility = Visibility.Visible;
                     currentProgressGrid.Visibility = Visibility.Visible;
                     break;
-                // Total files download progress
-                case (1):
+                case 1:
                     totalProgressGrid.SetValue(Grid.RowProperty, 2);
                     totalProgressGrid.Visibility = Visibility.Visible;
                     currentProgressGrid.Visibility = Visibility.Hidden;
                     break;
-                // Current file download progress
-                case (2):
+                case 2:
                     totalProgressGrid.Visibility = Visibility.Hidden;
                     currentProgressGrid.Visibility = Visibility.Visible;
                     break;
@@ -730,62 +700,68 @@ namespace Launcher
         {
             try
             {
-                var process = Process.Start(string.Format(@"{0}\{1}", _gPath, Properties.Settings.Default.clientExe));
+                var process = Process.Start(string.Format(@"{0}\{1}", _gPath, Properties.Settings.Default.ClientExeName));
 
-                if (Properties.Settings.Default.autologin == true)
+                if (Properties.Settings.Default.IsAutoLogin)
                 {
-                    NotifyIcon ni = new NotifyIcon();
+                    var ni = new NotifyIcon
+                    {
+                        Icon = new Icon(
+                            Application
+                                .GetResourceStream(new Uri("pack://application:,,,/img/101.ico"))
+                                ?.Stream 
+                            ?? throw new NullReferenceException("Не найден ресурс 101.ico")
+                            ),
+                        Visible = true
+                    };
 
-                    ni.Icon = new System.Drawing.Icon(Application.GetResourceStream(new Uri("pack://application:,,,/img/101.ico")).Stream);
-                    ni.Visible = true;
                     ni.ShowBalloonTip(2000, "Программа запуска", "Программа запуска продолжает работать в фоновом режиме. Чтобы развернуть ее, используйте двойной щелчек левой кнопки мыши", ToolTipIcon.Info);
-                    this.Hide();
+                    Hide();
                     ni.DoubleClick +=
-                        delegate(object sender, EventArgs args)
+                        delegate
                         {
                             Show();
                             ni.Visible = false;
                         };
 
-                    string accountName = Properties.Settings.Default.username;
+                    var accountName = Properties.Settings.Default.Login;
                     Thread.Sleep(600);
 
                     new Thread(() =>
                     {
                         try
                         {
-                            if (process != null)
+                            if (process == null) return;
+
+                            Thread.CurrentThread.IsBackground = true;
+
+                            while (!process.WaitForInputIdle())
                             {
-                                Thread.CurrentThread.IsBackground = true;
+                            }
 
-                                while (!process.WaitForInputIdle())
+                            Thread.Sleep(2000);
+
+                            foreach (var accNameLetter in accountName)
+                            {
+                                SendMessage(process.MainWindowHandle, WmChar, new IntPtr(accNameLetter), IntPtr.Zero);
+                                Thread.Sleep(30);
+                            }
+
+                            if (!string.IsNullOrWhiteSpace(Properties.Settings.Default.Password))
+                            {
+                                SendMessage(process.MainWindowHandle, WmKeyup, new IntPtr(VkTab), IntPtr.Zero);
+                                SendMessage(process.MainWindowHandle, WmKeydown, new IntPtr(VkTab), IntPtr.Zero);
+
+                                foreach (var accPassLetter in Properties.Settings.Default.Password)
                                 {
-                                }
-
-                                Thread.Sleep(2000);
-
-                                foreach (char accNameLetter in accountName)
-                                {
-                                    SendMessage(process.MainWindowHandle, WmChar, new IntPtr(accNameLetter), IntPtr.Zero);
+                                    SendMessage(process.MainWindowHandle, WmChar, new IntPtr(accPassLetter), IntPtr.Zero);
                                     Thread.Sleep(30);
                                 }
 
-                                if (!string.IsNullOrWhiteSpace(Properties.Settings.Default.password))
-                                {
-                                    SendMessage(process.MainWindowHandle, WmKeyup, new IntPtr(VkTab), IntPtr.Zero);
-                                    SendMessage(process.MainWindowHandle, WmKeydown, new IntPtr(VkTab), IntPtr.Zero);
-
-                                    foreach (char accPassLetter in Properties.Settings.Default.password)
-                                    {
-                                        SendMessage(process.MainWindowHandle, WmChar, new IntPtr(accPassLetter), IntPtr.Zero);
-                                        Thread.Sleep(30);
-                                    }
-
-                                    SendMessage(process.MainWindowHandle, WmKeyup, new IntPtr(VkReturn), IntPtr.Zero);
-                                    SendMessage(process.MainWindowHandle, WmKeydown, new IntPtr(VkReturn), IntPtr.Zero);
-                                }
-                                Thread.CurrentThread.Abort();
+                                SendMessage(process.MainWindowHandle, WmKeyup, new IntPtr(VkReturn), IntPtr.Zero);
+                                SendMessage(process.MainWindowHandle, WmKeydown, new IntPtr(VkReturn), IntPtr.Zero);
                             }
+                            Thread.CurrentThread.Abort();
                         }
                         catch
                         {
@@ -808,28 +784,28 @@ namespace Launcher
         /// <summary>
         /// Show WindowDialog with blur effects
         /// </summary>
-        /// <param name="window">Modal window to show</param>
-        private void ShowModalWithEffect (Window window)
+        /// <param name="modalWindow">Modal window to show</param>
+        private void ShowModalWithEffect (Window modalWindow)
         {
             var blur = new BlurEffect();
             var current = Background;
             blur.Radius = 15;
             Effect = blur;
 
-            if (window is Settings && anyDownloads)
+            if (modalWindow is Settings settings && AnyDownloads)
             {
-                (window as Settings).btn_del.IsEnabled = false;
-                (window as Settings).resetPath.IsEnabled = false;
-                (window as Settings).btn_del.ToolTip = "Не возможно выполнить\nво время процесса обновления";
+                settings.BtnDel.IsEnabled = false;
+                settings.ResetPath.IsEnabled = false;
+                settings.BtnDel.ToolTip = "Не возможно выполнить\nво время процесса обновления";
             }
 
-            window.Owner = this;
-            window.ShowDialog();
+            modalWindow.Owner = this;
+            modalWindow.ShowDialog();
             Effect = null;
             Background = current;
         }
 
-        private void version_MouseDown(object sender, MouseButtonEventArgs e)
+        private void Version_MouseDown(object sender, MouseButtonEventArgs e)
         {
             // Set motions only on Left button click
             if (e.LeftButton != MouseButtonState.Pressed) return;
@@ -845,25 +821,25 @@ namespace Launcher
         private void btn_settings_Click(object sender, RoutedEventArgs e)
         {
             ShowModalWithEffect(new Settings());
-            SetProgressType(Properties.Settings.Default.progressBarType);
+            SetProgressType(Properties.Settings.Default.ProgressBarType);
         }
                 
-        private void link_main_Click(object sender, System.Windows.RoutedEventArgs e)
+        private void link_main_Click(object sender, RoutedEventArgs e)
         {
             Process.Start("http://your-link.domain");
         }
 
-        private void link_cabinet_Click(object sender, System.Windows.RoutedEventArgs e)
+        private void link_cabinet_Click(object sender, RoutedEventArgs e)
         {
             Process.Start("http://your-link.domain");
         }
 
-        private void link_registration_Click(object sender, System.Windows.RoutedEventArgs e)
+        private void link_registration_Click(object sender, RoutedEventArgs e)
         {
             Process.Start("http://your-link.domain");
         }
 
-        private void link_social_Click(object sender, System.Windows.RoutedEventArgs e)
+        private void link_social_Click(object sender, RoutedEventArgs e)
         {
             Process.Start("http://your-link.domain");
         }

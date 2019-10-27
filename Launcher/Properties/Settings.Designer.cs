@@ -12,7 +12,7 @@ namespace Launcher.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "15.5.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "15.9.0.0")]
     internal sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase {
         
         private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
@@ -44,117 +44,117 @@ namespace Launcher.Properties {
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("https://www.dropbox.com/s/5mt8l6yygd21gzi/version.txt?dl=1")]
-        public string launcherVersionUrl {
+        public string LauncherVersionUrl {
             get {
-                return ((string)(this["launcherVersionUrl"]));
+                return ((string)(this["LauncherVersionUrl"]));
             }
         }
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("https://www.dropbox.com/s/xl9sgprm0zpmbps/news.txt?dl=1")]
-        public string launcherNewsFileUrl {
+        public string LauncherNewsFileUrl {
             get {
-                return ((string)(this["launcherNewsFileUrl"]));
+                return ((string)(this["LauncherNewsFileUrl"]));
             }
         }
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("https://www.dropbox.com/s/xu0wubztqckn9fi/updates.txt?dl=1")]
-        public string launcherUpdates {
+        public string LauncherUpdates {
             get {
-                return ((string)(this["launcherUpdates"]));
+                return ((string)(this["LauncherUpdates"]));
             }
         }
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("https://www.dropbox.com/s/ufpb35ihbf23j2q/realmlist.txt?dl=1")]
-        public string realmlistURL {
+        public string RealmlistURL {
             get {
-                return ((string)(this["realmlistURL"]));
+                return ((string)(this["RealmlistURL"]));
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string username {
+        public string Login {
             get {
-                return ((string)(this["username"]));
+                return ((string)(this["Login"]));
             }
             set {
-                this["username"] = value;
+                this["Login"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string password {
+        public string Password {
             get {
-                return ((string)(this["password"]));
+                return ((string)(this["Password"]));
             }
             set {
-                this["password"] = value;
+                this["Password"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool autologin {
+        public bool IsAutoLogin {
             get {
-                return ((bool)(this["autologin"]));
+                return ((bool)(this["IsAutoLogin"]));
             }
             set {
-                this["autologin"] = value;
+                this["IsAutoLogin"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("Не задано")]
-        public string gameFolder {
+        public string GameFolder {
             get {
-                return ((string)(this["gameFolder"]));
+                return ((string)(this["GameFolder"]));
             }
             set {
-                this["gameFolder"] = value;
+                this["GameFolder"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public int progressBarType {
+        public int ProgressBarType {
             get {
-                return ((int)(this["progressBarType"]));
+                return ((int)(this["ProgressBarType"]));
             }
             set {
-                this["progressBarType"] = value;
+                this["ProgressBarType"] = value;
             }
         }
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public long downloadSpeedLimit {
+        public long DownloadSpeedLimit {
             get {
-                return ((long)(this["downloadSpeedLimit"]));
+                return ((long)(this["DownloadSpeedLimit"]));
             }
             set {
-                this["downloadSpeedLimit"] = value;
+                this["DownloadSpeedLimit"] = value;
             }
         }
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("Wow.exe")]
-        public string clientExe {
+        public string ClientExeName {
             get {
-                return ((string)(this["clientExe"]));
+                return ((string)(this["ClientExeName"]));
             }
         }
     }

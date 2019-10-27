@@ -8,12 +8,10 @@ namespace Launcher
     /// </summary>
     public partial class App
     {
-        static Mutex _instanceMutex;
+        private static Mutex _instanceMutex;
         protected override void OnStartup(StartupEventArgs e)
         {
-            bool createdNew;
-
-            _instanceMutex = new Mutex(true, "F37E84CB-D76A-49B1-A1AC-80870903087B", out createdNew);
+            _instanceMutex = new Mutex(true, "F37E84CB-D76A-49B1-A1AC-80870903087B", out var createdNew);
             if (!createdNew)
             {
                 MessageBox.Show("Копия лаунчера уже запущена на данном компьютере", "Попытка повторного запуска", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -26,8 +24,7 @@ namespace Launcher
 
         protected override void OnExit(ExitEventArgs e)
         {
-            if (_instanceMutex != null)
-                _instanceMutex.ReleaseMutex();
+            _instanceMutex?.ReleaseMutex();
             base.OnExit(e);
         }
     }

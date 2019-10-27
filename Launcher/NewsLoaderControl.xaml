@@ -12,13 +12,13 @@
             <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)" Storyboard.TargetName="LayoutRoot">
                 <EasingDoubleKeyFrame KeyTime="0:0:0.4" Value="1"/>
             </DoubleAnimationUsingKeyFrames>
-            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)" Storyboard.TargetName="btn_left">
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)" Storyboard.TargetName="ButtonArrowLeft">
                 <EasingDoubleKeyFrame KeyTime="0:0:0.4" Value="1"/>
             </DoubleAnimationUsingKeyFrames>
-            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)" Storyboard.TargetName="btn_right">
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)" Storyboard.TargetName="ButtonArrowRight">
                 <EasingDoubleKeyFrame KeyTime="0:0:0.4" Value="1"/>
             </DoubleAnimationUsingKeyFrames>
-            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)" Storyboard.TargetName="body_bg">
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)" Storyboard.TargetName="BodyBg">
                 <EasingDoubleKeyFrame KeyTime="0:0:0.3" Value="1"/>
             </DoubleAnimationUsingKeyFrames>
         </Storyboard>
@@ -26,13 +26,13 @@
             <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)" Storyboard.TargetName="LayoutRoot">
                 <EasingDoubleKeyFrame KeyTime="0:0:0.4" Value="0.9"/>
             </DoubleAnimationUsingKeyFrames>
-            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)" Storyboard.TargetName="btn_left">
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)" Storyboard.TargetName="ButtonArrowLeft">
                 <EasingDoubleKeyFrame KeyTime="0:0:0.4" Value="0"/>
             </DoubleAnimationUsingKeyFrames>
-            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)" Storyboard.TargetName="btn_right">
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)" Storyboard.TargetName="ButtonArrowRight">
                 <EasingDoubleKeyFrame KeyTime="0:0:0.4" Value="0"/>
             </DoubleAnimationUsingKeyFrames>
-            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)" Storyboard.TargetName="body_bg">
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.Opacity)" Storyboard.TargetName="BodyBg">
                 <EasingDoubleKeyFrame KeyTime="0:0:0.3" Value="0"/>
             </DoubleAnimationUsingKeyFrames>
         </Storyboard>
@@ -109,23 +109,23 @@
 
     <Grid x:Name="LayoutRoot" Opacity="0.9">
         <Image Source="img/news_bg.jpg" Stretch="UniformToFill"/>
-        <Label x:Name="news_indacator_label" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Foreground="{Binding Foreground, ElementName=NewsControl}" FontFamily="Verdana" FontSize="18">
-            <TextBlock x:Name="news_indicator_text" Text="Загрузка новостей..." TextWrapping="Wrap"/>
+        <Label x:Name="NewsIndacatorLabel" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Foreground="{Binding Foreground, ElementName=NewsControl}" FontFamily="Verdana" FontSize="18">
+            <TextBlock x:Name="NewsIndicatorText" Text="Загрузка новостей..." TextWrapping="Wrap"/>
         </Label>
         <Grid x:Name="MainGrid" Background="#E5000000" Visibility="Hidden">
-            <Image x:Name="news_image" />
-            <Rectangle x:Name="body_bg" Fill="#99000000" Height="{Binding ActualHeight, ElementName=stackPanel}" VerticalAlignment="Bottom" Opacity="0"/>
-            <StackPanel x:Name="stackPanel" VerticalAlignment="Bottom">
-                <TextBlock x:Name="news_head" FontFamily="Vendara" FontSize="30" Foreground="{Binding Foreground, ElementName=NewsControl}" TextWrapping="Wrap" Padding="20,0" />
-                <TextBlock x:Name="news_body" FontFamily="Vendara" FontSize="14" Foreground="{Binding Foreground, ElementName=NewsControl}" TextWrapping="Wrap" Padding="10,0"/>
+            <Image x:Name="NewsImageControl" />
+            <Rectangle x:Name="BodyBg" Fill="#99000000" Height="{Binding ActualHeight, ElementName=StackPanel}" VerticalAlignment="Bottom" Opacity="0"/>
+            <StackPanel x:Name="StackPanel" VerticalAlignment="Bottom">
+                <TextBlock x:Name="NewsHeadControl" FontFamily="Vendara" FontSize="30" Foreground="{Binding Foreground, ElementName=NewsControl}" TextWrapping="Wrap" Padding="20,0" />
+                <TextBlock x:Name="NewsBodyControl" FontFamily="Vendara" FontSize="14" Foreground="{Binding Foreground, ElementName=NewsControl}" TextWrapping="Wrap" Padding="10,0"/>
             </StackPanel>
         </Grid>
 
-        <Button x:Name="btn_left" ClipToBounds="True" HorizontalAlignment="Left" Height="140" Width="40" VerticalAlignment="Center" FontSize="34.667" FontFamily="Californian FB" Background="#02000000" Foreground="White" BorderThickness="0" IsTabStop="False" IsHitTestVisible="True" Focusable="False" Style="{DynamicResource PlayButton}" Margin="-5" Click="btn_left_Click">
-            <Path Width="20" Height="25" Canvas.Left="22.1667" Canvas.Top="22.1667" Stretch="Fill" Fill="{Binding Foreground, ElementName=btn_left}" Data="F1 M 33.6458,38L 49.4792,53.8333L 38.7917,53.8333L 22.1667,38L 38.7917,22.1667L 49.4792,22.1667L 33.6458,38 Z "/>
-		</Button>
-        <Button x:Name="btn_right" ClipToBounds="True" HorizontalAlignment="Right" Height="140" Width="40" VerticalAlignment="Center" FontSize="25" FontFamily="SimHei" Background="#02000000" Foreground="White" BorderThickness="0" IsTabStop="False" IsHitTestVisible="True" Focusable="False" Style="{DynamicResource PlayButton}" Margin="-5" Click="btn_right_Click">
-			<Path Width="20" Height="25" Canvas.Left="26.5208" Canvas.Top="22.1667" Stretch="Fill" Fill="{Binding Foreground, ElementName=btn_right}" Data="F1 M 42.3542,38L 26.5208,53.8333L 37.2083,53.8333L 53.8333,38L 37.2083,22.1667L 26.5208,22.1667L 42.3542,38 Z "/>
-		</Button>
+        <Button x:Name="ButtonArrowLeft" ClipToBounds="True" HorizontalAlignment="Left" Height="140" Width="40" VerticalAlignment="Center" FontSize="34.667" FontFamily="Californian FB" Background="#02000000" Foreground="White" BorderThickness="0" IsTabStop="False" IsHitTestVisible="True" Focusable="False" Style="{DynamicResource PlayButton}" Margin="-5" Click="BtnLeft_Click">
+            <Path Width="20" Height="25" Canvas.Left="22.1667" Canvas.Top="22.1667" Stretch="Fill" Fill="{Binding Foreground, ElementName=ButtonArrowLeft}" Data="F1 M 33.6458,38L 49.4792,53.8333L 38.7917,53.8333L 22.1667,38L 38.7917,22.1667L 49.4792,22.1667L 33.6458,38 Z "/>
+        </Button>
+        <Button x:Name="ButtonArrowRight" ClipToBounds="True" HorizontalAlignment="Right" Height="140" Width="40" VerticalAlignment="Center" FontSize="25" FontFamily="SimHei" Background="#02000000" Foreground="White" BorderThickness="0" IsTabStop="False" IsHitTestVisible="True" Focusable="False" Style="{DynamicResource PlayButton}" Margin="-5" Click="BtnRight_Click">
+            <Path Width="20" Height="25" Canvas.Left="26.5208" Canvas.Top="22.1667" Stretch="Fill" Fill="{Binding Foreground, ElementName=ButtonArrowRight}" Data="F1 M 42.3542,38L 26.5208,53.8333L 37.2083,53.8333L 53.8333,38L 37.2083,22.1667L 26.5208,22.1667L 42.3542,38 Z "/>
+        </Button>
     </Grid>
 </UserControl>

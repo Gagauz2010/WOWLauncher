@@ -5,7 +5,6 @@ using System.Net;
 using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Input;
-using Launcher.Properties;
 
 namespace Launcher
 {
@@ -18,13 +17,13 @@ namespace Launcher
         {
             InitializeComponent();
 
-            var request = (HttpWebRequest)WebRequest.Create(new Uri(Properties.Settings.Default.launcherUpdates));
+            var request = (HttpWebRequest)WebRequest.Create(new Uri(Properties.Settings.Default.LauncherUpdates));
             var response = (HttpWebResponse)request.GetResponse();
-            StreamReader sr = new StreamReader(response.GetResponseStream());
+            var sr = new StreamReader(response.GetResponseStream() ?? throw new InvalidOperationException($@"Ошибка получения ответа от {Properties.Settings.Default.LauncherUpdates}"));
             NewsBox.AppendText(sr.ReadToEnd());
         }
 
-        private void btn_close_Click(object sender, RoutedEventArgs e)
+        private void BtnClose_Click(object sender, RoutedEventArgs e)
         {
             Close();
         }
@@ -33,16 +32,6 @@ namespace Launcher
         {
             var hyperlink = (Hyperlink)sender;
             Process.Start(hyperlink.NavigateUri.ToString());
-        }
-
-        private void rectangle1_MouseDown(object sender, MouseButtonEventArgs e)
-        {
-            if (e.LeftButton == MouseButtonState.Pressed)
-            {
-                Cursor = Cursors.SizeAll;
-                DragMove();
-                Cursor = Cursors.Arrow;
-            }
         }
     }
 }

@@ -5,7 +5,6 @@ using System.IO;
 using System.Net;
 using System.Windows.Threading;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
@@ -16,57 +15,57 @@ namespace Launcher
     /// <summary>
     /// Логика взаимодействия для NewsLoaderControl.xaml
     /// </summary>
-    public partial class NewsLoaderControl : UserControl
+    public partial class NewsLoaderControl
     {
-        private string _tempPath = Path.GetTempFileName();
-        private LinkedList<News> newsList = new LinkedList<News>();
-        private LinkedListNode<News> node;
-        private DispatcherTimer itemChanger = new DispatcherTimer();
+        private readonly string _tempPath = Path.GetTempFileName();
+        private readonly LinkedList<News> _newsList = new LinkedList<News>();
+        private readonly DispatcherTimer _itemChanger = new DispatcherTimer();
+        private LinkedListNode<News> _node;
 
         private class News
         {
-            public ImageSource image { get; set; }
-            public string head { get; set; }
-            public string body { get; set; }
-            public string link { get; set; }
+            public ImageSource Image { get; }
+            public string Head { get; }
+            public string Body { get; }
+            public string Link { get; }
 
             public News(string head, string body, ImageSource image, string link)
             {
-                this.head = head;
-                this.body = body;
-                this.image = image;
-                this.link = link;
+                Head = head;
+                Body = body;
+                Image = image;
+                Link = link;
             }
         }
 
         public NewsLoaderControl()
         {
-            this.InitializeComponent();
+            InitializeComponent();
         }
 
         public ImageSource NewsImage
         {
-            get { return news_image.Source; }
-            set { news_image.Source = value; }
+            get => NewsImageControl.Source;
+            set => NewsImageControl.Source = value;
         }
 
         public string NewsHead
         {
-            get { return news_head.Text; }
-            set { news_head.Text = value; }
+            get => NewsHeadControl.Text;
+            set => NewsHeadControl.Text = value;
         }
 
         public string NewsBody
         {
-            get { return news_body.Text; }
-            set { news_body.Text = value; }
+            get => NewsBodyControl.Text;
+            set => NewsBodyControl.Text = value;
         }
 
         public string NewsLink { get; set; }
 
         private void NewsControl_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if (newsList.Count != 0)
+            if (_newsList.Count != 0)
                 Process.Start(NewsLink);
         }
 
@@ -74,112 +73,108 @@ namespace Launcher
         /// Смена отображаемой новости
         /// </summary>
         /// <param name="next">Если значение true то устанавливает следующим элементом LinkedListNode.Next</param>
-        private void changeNewsItem(bool next)
+        private void ChangeNewsItem(bool next)
         {
             if (next)
             {
-                node = node.Next;
-                if (node == null)
-                    node = newsList.First;
+                _node = _node.Next ?? _newsList.First;
             }
             else
             {
-                node = node.Previous;
-                if (node == null)
-                    node = newsList.Last;
+                _node = _node.Previous ?? _newsList.Last;
             }
 
-            Storyboard sb = FindResource("ChangeItemsBegin") as Storyboard;
-            Storyboard.SetTarget(sb, MainGrid);
-            sb.Completed += sb_Completed;
+            var sb = FindResource("ChangeItemsBegin") as Storyboard;
+            Storyboard.SetTarget(sb ?? throw new InvalidOperationException("Не найден ресурс \"ChangeItemsBegin\""), MainGrid);
+            sb.Completed += StoryBoard_Completed;
             sb.Begin();
 
 
         }
 
-        private void sb_Completed(object sender, EventArgs e)
+        private void StoryBoard_Completed(object sender, EventArgs e)
         {
-            Storyboard sb = FindResource("ChangeItemsEnd") as Storyboard;
-            Storyboard.SetTarget(sb, MainGrid);
+            var sb = FindResource("ChangeItemsEnd") as Storyboard;
+            Storyboard.SetTarget(sb ?? throw new InvalidOperationException("Не найден ресурс \"ChangeItemsEnd\""), MainGrid);
             sb.Begin();
 
             SetNewsValues();
         }
 
-        public void SetNews(string Url)
+        public void SetNews(string url)
         {
             var client = new WebClient();
 
-            client.DownloadFileCompleted += client_DownloadFileCompleted;
+            client.DownloadFileCompleted += Client_DownloadFileCompleted;
 
-            client.DownloadFileAsync(new Uri(Url), _tempPath);
+            client.DownloadFileAsync(new Uri(url), _tempPath);
         }
 
-        private void client_DownloadFileCompleted(object sender, System.ComponentModel.AsyncCompletedEventArgs e)
+        private void Client_DownloadFileCompleted(object sender, System.ComponentModel.AsyncCompletedEventArgs e)
         {
-            using (StreamReader reader = new StreamReader(_tempPath))
+            using (var reader = new StreamReader(_tempPath))
             {
                 string line;
 
                 while ((line = reader.ReadLine()) != null)
                 {
-                    string[] ex = line.Split(char.Parse("#"));
-                    Uri imageUri = new Uri(ex[2]);
-                    BitmapImage imageBitmap = new BitmapImage(imageUri);
+                    var ex = line.Split(char.Parse("#"));
+                    var imageUri = new Uri(ex[2]);
+                    var imageBitmap = new BitmapImage(imageUri);
 
-                    News news = new News(ex[0], ex[1], imageBitmap, ex[3]);
+                    var news = new News(ex[0], ex[1], imageBitmap, ex[3]);
 
-                    newsList.AddLast(news);
+                    _newsList.AddLast(news);
                 }
             }
 
-            if (newsList.Count != 0)
+            if (_newsList.Count != 0)
             {
                 MainGrid.Visibility = Visibility.Visible;
-                news_indacator_label.Visibility = Visibility.Hidden;
+                NewsIndacatorLabel.Visibility = Visibility.Hidden;
 
-                node = newsList.First;
+                _node = _newsList.First;
                 SetNewsValues();
 
-                itemChanger.Tick += new EventHandler(itemChanger_Tick);
-                itemChanger.Interval = new TimeSpan(0, 0, 5);
-                itemChanger.Start();
+                _itemChanger.Tick += ItemChanger_Tick;
+                _itemChanger.Interval = new TimeSpan(0, 0, 5);
+                _itemChanger.Start();
             }
             else
             {
-                news_indicator_text.Text = "Спосок новостей пуст";
-                btn_left.Visibility = Visibility.Hidden;
-                btn_right.Visibility = Visibility.Hidden;
+                NewsIndicatorText.Text = "Список новостей пуст";
+                ButtonArrowLeft.Visibility = Visibility.Hidden;
+                ButtonArrowRight.Visibility = Visibility.Hidden;
             }
         }
 
-        private void itemChanger_Tick(object sender, EventArgs e)
+        private void ItemChanger_Tick(object sender, EventArgs e)
         {
-            changeNewsItem(true);
+            ChangeNewsItem(true);
         }
 
         private void SetNewsValues()
         {
-            NewsImage = node.Value.image;
-            NewsHead = node.Value.head;
-            NewsBody = node.Value.body;
-            NewsLink = node.Value.link;
+            NewsImage = _node.Value.Image;
+            NewsHead = _node.Value.Head;
+            NewsBody = _node.Value.Body;
+            NewsLink = _node.Value.Link;
         }
 
-        private void btn_right_Click(object sender, RoutedEventArgs e)
+        private void BtnRight_Click(object sender, RoutedEventArgs e)
         {
-            changeNewsItem(true);
-            itemChanger.Interval = new TimeSpan(0, 0, 5);
-            itemChanger.Stop();
-            itemChanger.Start();
+            ChangeNewsItem(true);
+            _itemChanger.Interval = new TimeSpan(0, 0, 5);
+            _itemChanger.Stop();
+            _itemChanger.Start();
         }
 
-        private void btn_left_Click(object sender, RoutedEventArgs e)
+        private void BtnLeft_Click(object sender, RoutedEventArgs e)
         {
-            changeNewsItem(false);
-            itemChanger.Interval = new TimeSpan(0, 0, 5);
-            itemChanger.Stop();
-            itemChanger.Start();
+            ChangeNewsItem(false);
+            _itemChanger.Interval = new TimeSpan(0, 0, 5);
+            _itemChanger.Stop();
+            _itemChanger.Start();
         }
     }
 }
