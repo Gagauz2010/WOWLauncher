@@ -103,8 +103,9 @@ namespace Launcher
             /// <summary>
             /// Class initializer
             /// </summary>
-            /// <param name="url">direct download url</param>
-            /// <param name="file"></param>
+            /// <param name="url">Direct download url</param>
+            /// <param name="name">File name</param>
+            /// <param name="file">Where to download file</param>
             /// <param name="fileBytes">File size in bytes</param>
             /// <param name="md5">MD5 hash</param>
             public PatchFileInfo(string url, string name, string file, long fileBytes, string md5)
