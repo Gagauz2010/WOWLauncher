@@ -112,6 +112,7 @@ namespace Launcher
             {
                 Url = url;
                 Name = name;
+                Name = name;
                 File = file;
                 FileBytes = fileBytes;
                 Md5Hash = md5;
@@ -642,13 +643,13 @@ namespace Launcher
                         // ignored
                     }
                 }
-
-                MessageBox.Show("Все файлы успешно удалены", "Удаление файлов", MessageBoxButton.OK, MessageBoxImage.Information);
-
-                btn_play.Visibility = Visibility.Hidden;
-
-                labelmsg.Content = "Запуск клиента невозможен";
             }
+
+            File.Delete(_updatePath);
+
+            MessageBox.Show("Все файлы успешно удалены", "Удаление файлов", MessageBoxButton.OK, MessageBoxImage.Information);
+            btn_play.Visibility = Visibility.Hidden;
+            labelmsg.Content = "Запуск клиента невозможен";
         }
 
         /// <summary>
