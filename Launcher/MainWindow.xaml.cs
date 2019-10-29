@@ -344,6 +344,14 @@ namespace Launcher
             LoadNews();
         }
 
+        private void SaveCurrentCompletedFiles()
+        {
+            using (var file = File.CreateText(_updatePath))
+            {
+                file.WriteLine(JsonSerializer<Dictionary<string, string>>.ToString(_filesCompleted));
+            }
+        }
+
         /// <summary>
         /// Starts get update list for self or game client
         /// </summary>
@@ -440,6 +448,7 @@ namespace Launcher
                             // Ignore matched file and add to completed map
                             _filesCompleted.Add(pfi.Name, pfi.Md5Hash);
                             _count++;
+                            SaveCurrentCompletedFiles();
                             continue;
                         }
                     }
@@ -523,7 +532,7 @@ namespace Launcher
                     File.Move(currentFile, pfi.File);
                     _filesCompleted.Add(pfi.Name, pfi.Md5Hash);
                     _currentFileBytes = 0; CurrentFileBytes2 = 0;
-                    // TODO: write downloaded file to App Directory
+                    SaveCurrentCompletedFiles();
                 }
                 catch (Exception ex)
                 {
@@ -545,10 +554,6 @@ namespace Launcher
             StopWatch.Reset();
 
             new DirectoryInfo(_gPath).GetFiles("*.upd", SearchOption.AllDirectories).ToList().ForEach(file => file.Delete());
-            using (var file = File.CreateText(_updatePath))
-            {
-                file.WriteLine(JsonSerializer<Dictionary<string, string>>.ToString(_filesCompleted));
-            }
         }
 
         private void UpdateProgressbar(int percent, long bytesReceived, long totalBytesToReceive)
