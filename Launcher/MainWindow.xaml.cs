@@ -405,6 +405,10 @@ namespace Launcher
         {
             _length = File.ReadAllLines(_tempPath).Length;
 
+            Console.WriteLine($@"-----------------------------------------");
+            Console.WriteLine($@"Start initialization in {DateTime.Now:HH:mm:ss.ffffff}.");
+            Console.WriteLine($@"-----------------------------------------");
+
             // Get map of downloaded files
             if (File.Exists(_updatePath))
             {
@@ -423,6 +427,7 @@ namespace Launcher
                     var path = Utilities.Updater.GetPath(_gPath, ex[1]);
                     var pfi = new PatchFileInfo(ex[0], ex[1], path, Convert.ToInt64(ex[3]), ex[2]);
 
+                    Console.WriteLine($@"[{_count + 1:000}/{_length:000}] Start checking {pfi.Name}.");
 
                     if (File.Exists(path))
                     {
@@ -430,6 +435,7 @@ namespace Launcher
                         {
                             // Ignore downloaded file
                             _count++;
+                            Console.WriteLine($@"{pfi.Name} is updated. {_length - _count} more left.");
                             continue;
                         }
 
@@ -448,6 +454,7 @@ namespace Launcher
                             // Ignore matched file and add to completed map
                             _filesCompleted.Add(pfi.Name, pfi.Md5Hash);
                             _count++;
+                            Console.WriteLine($@"Done with {pfi.Name}. {_length - _count} more left.");
                             SaveCurrentCompletedFiles();
                             continue;
                         }
@@ -459,6 +466,9 @@ namespace Launcher
                 }
             }
 
+            Console.WriteLine($@"--------------------------------------");
+            Console.WriteLine($@"End initialization in {DateTime.Now:HH:mm:ss.ffffff}.");
+            Console.WriteLine($@"--------------------------------------");
 
             while (_patchQueue.Count != 0)
             {
