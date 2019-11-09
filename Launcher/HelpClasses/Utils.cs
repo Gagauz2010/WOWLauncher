@@ -19,9 +19,11 @@ namespace Launcher.HelpClasses
             public static string GetPath(string gamePath, string item)
             {
                 if (item.ToLower().Contains(".mpq") && item.Contains("-ruRU-"))
-                    return $@"{gamePath}Data\ruRU\{item}";
+                    return Path.Combine(gamePath, $@"Data\ruRU\{item}"); 
 
-                return item.ToLower().Contains(".mpq") ? $@"{gamePath}Data\{item}" : $@"{gamePath}{item}";
+                return item.ToLower().Contains(".mpq") 
+                    ? Path.Combine(gamePath, $@"Data\{item}") 
+                    : Path.Combine(gamePath, item);
             }
 
             public static string DetectSize(long value)
