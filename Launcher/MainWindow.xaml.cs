@@ -150,18 +150,22 @@ namespace Launcher
         /// </summary>
         private void FileSync()
         {
-            if (Properties.Settings.Default.GameFolder.Equals("Не задано"))
-                if (File.Exists($@"{AppDomain.CurrentDomain.BaseDirectory}\Wow.exe"))
-                {
-                    UpdateClient(AppDomain.CurrentDomain.BaseDirectory);
-                }
-                else
-                {
-                    var result = MessageBox.Show("Файл \"Wow.exe\" не найден!\nПожалуйста посместите программу в папку с игрой или укажите путь к папке с игрой!\n\nУказать путь сейчас?", "Ошибка местоположения", MessageBoxButton.YesNo, MessageBoxImage.Question);
-                    TryToFindFolder(result);
-                }
-            else
-                UpdateClient(Properties.Settings.Default.GameFolder);
+            var storedPath = Properties.Settings.Default.GameFolder;
+            if (File.Exists(Path.Combine(storedPath, "Wow.exe")))
+            {
+                UpdateClient(storedPath);
+                return;
+            }
+
+            var localPath = AppDomain.CurrentDomain.BaseDirectory;
+            if (File.Exists(Path.Combine(localPath, "Wow.exe")))
+            {
+                UpdateClient(localPath);
+                return;
+            }
+
+            var result = MessageBox.Show("Файл \"Wow.exe\" не найден!\nПожалуйста посместите программу в папку с игрой или укажите путь к папке с игрой!\n\nУказать путь сейчас?", "Ошибка местоположения", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            TryToFindFolder(result);
         }
 
         /// <summary>
@@ -176,23 +180,24 @@ namespace Launcher
                 ShowNewFolderButton = false
             };
             var result = folder.ShowDialog();
-            if (result == System.Windows.Forms.DialogResult.OK)
+
+            if (result != System.Windows.Forms.DialogResult.OK)
             {
-                if (File.Exists(Path.Combine(folder.SelectedPath, "Wow.exe")))
-                {
-                    var folderPath = folder.SelectedPath;
-                    Properties.Settings.Default.GameFolder = folderPath;
-                    Properties.Settings.Default.Save();
-                    FileSync();
-                }
-                else
-                {
-                    var retryResult = MessageBox.Show("В выбранной папке файл \"Wow.exe\" не найден!\nПожалуйста выберите корректную папку с игрой!\n\nПовторить попытку выбора?", "Ошибка выбора папки", MessageBoxButton.YesNo, MessageBoxImage.Question);
-                    TryToFindFolder(retryResult);
-                }
-            }
-            else
                 Application.Current.Shutdown();
+                return;
+            }
+
+            if (File.Exists(Path.Combine(folder.SelectedPath, "Wow.exe")))
+            {
+                var folderPath = folder.SelectedPath;
+                Properties.Settings.Default.GameFolder = folderPath;
+                Properties.Settings.Default.Save();
+                FileSync();
+                return;
+            }
+
+            var retryResult = MessageBox.Show("В выбранной папке файл \"Wow.exe\" не найден!\nПожалуйста выберите корректную папку с игрой!\n\nПовторить попытку выбора?", "Ошибка выбора папки", MessageBoxButton.YesNo, MessageBoxImage.Question);
+            TryToFindFolder(retryResult);
         }
 
         /// <summary>
@@ -218,6 +223,7 @@ namespace Launcher
         /// <param name="gPath">Wow game root folder</param>
         private void UpdateClient(string gPath)
         {
+
             var clientVersion = FileVersionInfo.GetVersionInfo(Path.Combine(gPath, "Wow.exe"));
             var v = clientVersion.FileVersion.Split(char.Parse(","));
 
