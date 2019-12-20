@@ -270,29 +270,31 @@ namespace Launcher
 
                 //TODO: COMMENT NEXT PART OF CODE IF CLIENT DOESN'T HAVE REALMLIST
                 #region <= 3.3.5 realmlist changer
-                var writer = new StreamWriter(rPath);
-                writer.WriteLine(realmlist);
-                writer.Flush();
-                writer.Close();
+                using (var writer = new StreamWriter(rPath))
+                {
+                    writer.WriteLine(realmlist);
+                }
                 #endregion
 
                 //TODO: UNCOMMENT NEXT PART OF CODE IF CLIENT DOESN'T HAVE REALMLIST
                 #region >= 3.3.5 realmlist changer
-                /*string line;
-
-                var reader = new StreamReader(rPath);
+                /*
 
                 var builder = new StringBuilder();
 
-                while ((line = reader.ReadLine()) != null)
-                    builder.AppendLine(line.ToLower().Contains("set realmlist") ? realmlist : line);
+                using (var reader = new StreamReader(rPath))
+                {
+                    string line;
+                    while ((line = reader.ReadLine()) != null)
+                        builder.AppendLine(line.ToLower().Contains("set realmlist") ? realmlist : line);
+                }
 
-                reader.Close();
+                using (var writer = new StreamWriter(rPath))
+                {
+                    writer.Write(builder.ToString());
+                } 
 
-                var writer = new StreamWriter(rPath);
-                writer.Write(builder.ToString());
-                writer.Flush();
-                writer.Close();*/
+                */
                 #endregion
 
                 DeleteOldPatches();
