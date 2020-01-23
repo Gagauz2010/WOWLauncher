@@ -460,7 +460,7 @@ namespace Launcher
                         if (pfi.Md5Hash == sb.ToString())
                         {
                             // Ignore matched file and add to completed map
-                            _filesCompleted.Add(pfi.Name, pfi.Md5Hash);
+                            _filesCompleted[pfi.Name] = pfi.Md5Hash;
                             _count++;
                             Console.WriteLine($@"Done with {pfi.Name}. {_length - _count} more left.");
                             SaveCurrentCompletedFiles();
@@ -548,7 +548,7 @@ namespace Launcher
 
                     File.Delete(pfi.File);
                     File.Move(currentFile, pfi.File);
-                    _filesCompleted.Add(pfi.Name, pfi.Md5Hash);
+                    _filesCompleted[pfi.Name] = pfi.Md5Hash;
                     _currentFileBytes = 0; CurrentFileBytes2 = 0;
                     SaveCurrentCompletedFiles();
                 }
