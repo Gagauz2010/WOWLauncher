@@ -64,7 +64,6 @@
 
 ### Контактные данные
 - *Telegram*: [@Jumper92](https://t.me/Jumper92);
-- *Skype*: [gagauz200992](skype:gagauz200992?add);
 - *E-Mail*: gaga-ya@hotmail.com.
 
 ---
