@@ -63,7 +63,7 @@ namespace Launcher.HelpClasses
                 try
                 {
                     using (var client = new WebClient())
-                    using (client.OpenRead("http://www.google.com"))
+                    using (client.OpenRead("https://clients3.google.com/generate_204"))
                     {
                         return true;
                     }
