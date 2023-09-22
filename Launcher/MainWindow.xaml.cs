@@ -851,22 +851,22 @@ namespace Launcher
                 
         private void link_main_Click(object sender, RoutedEventArgs e)
         {
-            Process.Start("http://your-link.domain");
+            Process.Start("http://games-on.su/cataclysm/");
         }
 
         private void link_cabinet_Click(object sender, RoutedEventArgs e)
         {
-            Process.Start("http://your-link.domain");
+            Process.Start("http://games-on.su:15000/lk/");
         }
 
         private void link_registration_Click(object sender, RoutedEventArgs e)
         {
-            Process.Start("http://your-link.domain");
+            Process.Start("http://games-on.su/wow2/");
         }
 
         private void link_social_Click(object sender, RoutedEventArgs e)
         {
-            Process.Start("http://your-link.domain");
+            Process.Start("https://vk.com");
         }
     }
 }
