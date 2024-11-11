@@ -6,66 +6,75 @@
 ----------| |_| | |_| | | | | | | |_) |  __/ |-------------
 -----------\___/-\__,_|_| |_| |_| .__/-\___|_|-------------
 --------------------------------|_|------------------------
--Coding for you since 2010. All rights reserved © 2024 year
+- Coding for you since 2010. All rights reserved © 2024 year
 -----------------------------------------------------------
 ```
 
 # World of WarCraft Launcher
-`Launcher` - это любительский инструментарий для предоставления игрокам Вашего сервера быстрого доступа ко множеству функций.
+`Launcher` - This is a hobbyist toolkit for providing your server players with quick access to a variety of features.
 
-<p align="center" >
-<img src="https://pp.vk.me/c631428/v631428303/500ff/wMh1l71dY5M.jpg" width="500" height="356"/>
+<p align="center">
+  <img src="https://pp.vk.me/c631428/v631428303/500ff/wMh1l71dY5M.jpg" width="500" height="356"/>
 </p>
 
 ---
-## Документация
-Официальную документацию Вы сможете найти по [ССЫЛКЕ](https://github.com/Gagauz2010/WOWLauncher/blob/master/README.docx).
+## Documentation
+
+You can find the official documentation at [LINK](https://github.com/Gagauz2010/WOWLauncher/blob/master/README.docx).
 
 ---
-## Возможности
+## Possibilities
 
-### Основные возможности
-* Автообновление программы;
-* Чиста кэша;
-* Запись подключения к серверу в файл ```realmlist.wtf```;
-* Вывод новостей;
-* Скачивание новых патчей (без обновления инструментария):
-  * Сравнение MD5 хэша файлов (ваши патчи всегда будут в сохранности);
-  * Отображение прогресса загрузки обновления (оставшееся время, скорость, процентное соотношение, размер);
-  * Возобновляемая загрузка обновлений ```(докачка файлов)```;
-* Удаление серверных патчей;
-```если игроки пожелают уйти с сервера (без вмешательства в инструментарий)```
-* Удаление всех нежелательных патчей;
-```Сфера применения: откат неудачных обновлений, удаление чужеродных патчей кроме стоковских и серверных```
-* Запрет запуска инструментария:
-  * Повторно;
-  * Пока запущен клиент WoW;
+### Main features
 
-### Настройки приложения
-Приложение имеет свои собственные пользовательские настройки:
+* Automatic program update.
+* Clear cache.
+* Recording the server connection to the `realmlist.wtf` file.
+* News output.
+* Downloading new patches (without updating the toolkit):
+  * Compare MD5 hash of files (your patches will always be safe).
+  * Displays the update download progress (remaining time, speed, percentage, size).
+  * Resumable download of updates `(file download resuming)`.
+* Removing server patches.
+  * `if players wish to leave the server (without interfering with the toolkit)`.
+* Removing all unwanted patches.
+  * `Scope: rollback of failed updates, removal of foreign patches except stock and server ones`.
+* Preventing the tool from running:
+  * Again.
+  * While the wow client is running.
 
-* **Автоматическая авторизация в клиенте игры** по сохраненным пользовательским данным:
-```Введенные данные по умолчанию остаются анонимными```
-* Явное и неявное **указание пути клиента игры**
-```Установка программы в корень клиента игры или свободное расположение дистрибутива и выбор папки вручную```
-* Настраиваемое **ограничение загрузки** файлов игры
-```Ограничение пропускной способности сети```
-* Настраиваемое **отображение прогресса загрузки** обновлений
-  * Полный прогресс загрузки
-  * Текущий прогресс загрузки
-  * Смешанный прогресс загрузки
+### Application settings
+
+The application has its own user settings:
+
+* **Automatic authorization in the game client** using saved user data:
+  * `The data entered remains anonymous by default`.
+* Explicit and implicit **indication of the game client path**
+  * `Installing the program to the root of the game client or a free location of the distribution and selecting the folder manually`
+* Customizable **download limit** for game files
+  * `Network Bandwidth Limitation`
+* Customizable **download progress display** of updates
+  * Full download progress
+  * Current download progress
+  * Mixed loading progress
 
 ---
-## Отзывы
-Я бы с удовольствием получал отзывы о недоработках, предложениях и Ваши наработки. Создавайте Github issues, pull requests, или пишите личным сообщением (по предоставленным контактным данным).
 
-### Разработка
-* Гагауз Сергей
+## Reviews
 
-### Контактные данные
-- *Telegram*: [@Jumper92](https://t.me/Jumper92);
+I would be happy to receive feedback on shortcomings, suggestions and your developments. Create Github issues, pull requests, or write a private message (using the contact details provided).
+
+### Development
+
+* Гагауз Сергей (Gagauz Sergey)
+
+### Contact details
+
+- *Telegram*: [@Jumper92](https://t.me/Jumper92).
 - *E-Mail*: gaga-ya@hotmail.com.
 
 ---
-## Лицензия
-WoW Launcher распространяется под GPLv3 лицензией. Для большей информации смотрите файл LICENSE.
+
+## License
+
+WoW Launcher is distributed under the GPLv3 license. For more information, see the [LICENSE](https://github.com/Gagauz2010/WOWLauncher/blob/master/LICENSE) file.
