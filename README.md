@@ -10,6 +10,11 @@
 -----------------------------------------------------------
 ```
 
+---
+### Localized README.md
+🇷🇺 [Русский](https://github.com/Gagauz2010/WOWLauncher/blob/master/README-ruRU.md)
+---
+
 # World of WarCraft Launcher
 `Launcher` - This is a hobbyist toolkit for providing your server players with quick access to a variety of features.
 
@@ -34,7 +39,7 @@ You can find the official documentation at [LINK](https://github.com/Gagauz2010/
 * Downloading new patches (without updating the toolkit):
   * Compare MD5 hash of files (your patches will always be safe).
   * Displays the update download progress (remaining time, speed, percentage, size).
-  * Resumable download of updates `(file download resuming)`.
+  * Resumable download of updates.
 * Removing server patches.
   * `if players wish to leave the server (without interfering with the toolkit)`.
 * Removing all unwanted patches.
